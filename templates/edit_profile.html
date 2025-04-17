@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Social</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <h1>Social</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/home"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="edit-profile-container">
+            <h1>Edit Profile</h1>
+            
+            {% if message %}
+            <div class="alert success">
+                {{ message }}
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="alert error">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/edit-profile" method="post" enctype="multipart/form-data">
+                <div class="form-group profile-photo-upload">
+                    <div class="current-photo">
+                        {% if user_data.photoURL %}
+                        <img src="{{ user_data.photoURL }}" alt="{{ user_data.displayName }}" id="profile-preview">
+                        {% else %}
+                        <div class="profile-placeholder" id="profile-preview-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="upload-controls">
+                        <label for="profile_photo">Change Profile Photo</label>
+                        <input type="file" id="profile_photo" name="profile_photo" accept="image/*" onchange="previewImage()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" value="{{ user_data.username }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" value="{{ user_data.displayName }}" required>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function previewImage() {
+            const input = document.getElementById('profile_photo');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Check if preview placeholder exists
+                    const placeholder = document.getElementById('profile-preview-placeholder');
+                    if (placeholder) {
+                        // Replace placeholder with image
+                        const parent = placeholder.parentElement;
+                        const img = document.createElement('img');
+                        img.id = 'profile-preview';
+                        img.src = e.target.result;
+                        img.alt = 'Profile Preview';
+                        parent.innerHTML = '';
+                        parent.appendChild(img);
+                    } else {
+                        // Update existing preview image
+                        document.getElementById('profile-preview').src = e.target.result;
+                    }
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>
