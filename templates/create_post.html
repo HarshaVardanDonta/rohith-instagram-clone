@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post | Instagram Clone</title>
+    <link rel="stylesheet" href="/static/css/universal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Create New Post</h1>
+        
+        {% if error %}
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+        {% endif %}
+        
+        <form class="create-post-form" action="/create" method="post" enctype="multipart/form-data">
+            <div class="preview-container" id="preview-section">
+                <img id="image-preview" src="" alt="Preview" style="display: none;">
+                <div id="upload-prompt" class="upload-prompt">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Upload an image for your post</p>
+                </div>
+            </div>
+            
+            <div class="form-group custom-file-input">
+                <label for="image">Upload Image</label>
+                <label for="image" class="file-input-label">
+                    <i class="fas fa-camera"></i> Choose a photo
+                </label>
+                <input type="file" id="image" name="image" accept="image/*" required onchange="previewImage(event)">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">
+                    <i class="fas fa-pencil-alt"></i> Description
+                </label>
+                <textarea id="description" name="description" placeholder="Write a caption for your post..." required></textarea>
+                <div class="character-count"><span id="char-count">0</span> / 2200</div>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i> Share Post
+            </button>
+        </form>
+        
+        <div class="navigation-buttons">
+            <a href="/home" class="nav-button">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            const preview = document.getElementById('image-preview');
+            const uploadPrompt = document.getElementById('upload-prompt');
+            
+            reader.onload = function() {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+                uploadPrompt.style.display = 'none';
+            }
+            
+            reader.readAsDataURL(event.target.files[0]);
+        }
+        
+        // Count characters in description
+        document.getElementById('description').addEventListener('input', function() {
+            const charCount = this.value.length;
+            document.getElementById('char-count').innerText = charCount;
+            
+            if (charCount > 2200) {
+                document.getElementById('char-count').classList.add('text-danger');
+            } else {
+                document.getElementById('char-count').classList.remove('text-danger');
+            }
+        });
+    </script>
+</body>
+</html>

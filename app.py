@@ -492,5 +492,110 @@ async def edit_profile(
             }
         )
 
+@app.get("/create", response_class=HTMLResponse)
+async def create_post_page(request: Request):
+    """Render create post page"""
+    return templates.TemplateResponse("create_post.html", {
+        "request": request, 
+        "user": request.state.user,
+        "user_data": request.state.user_data
+    })
+
+@app.post("/create")
+async def create_post(
+    request: Request,
+    description: str = Form(...),
+    image: UploadFile = File(...)
+):
+    """Create a new post with description and image"""
+    # Get the user ID from request state
+    user_id = request.state.user.uid
+    
+    try:
+        # Check if image is valid
+        if not image or not image.filename:
+            return templates.TemplateResponse(
+                "create_post.html", 
+                {
+                    "request": request, 
+                    "error": "Image file is required"
+                }
+            )
+            
+        # Check file type
+        allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+        if image.content_type not in allowed_types:
+            return templates.TemplateResponse(
+                "create_post.html", 
+                {
+                    "request": request, 
+                    "error": "Only JPEG, PNG, GIF, and WebP images are allowed"
+                }
+            )
+        
+        # Initialize Firebase storage bucket
+        bucket = storage.bucket(app=firebase_admin.get_app(), name=os.getenv('FIREBASE_STORAGE_BUCKET'))
+        
+        # Create a unique filename to avoid overwriting
+        post_id = str(uuid.uuid4())
+        file_extension = os.path.splitext(image.filename)[1]
+        file_name = f"posts/{user_id}/{post_id}{file_extension}"
+        
+        # Read the file content
+        file_content = await image.read()
+        
+        # Upload the file to Firebase Storage
+        blob = bucket.blob(file_name)
+        blob.upload_from_string(
+            file_content,
+            content_type=image.content_type
+        )
+        
+        # Make the file publicly accessible
+        blob.make_public()
+        
+        # Get the public URL
+        image_url = blob.public_url
+        
+        # Create post data
+        post_data = {
+            'postId': post_id,
+            'userId': user_id,
+            'description': description,
+            'imageUrl': image_url,
+            'createdAt': firestore.SERVER_TIMESTAMP,
+            'likes': 0,
+            'comments': 0
+        }
+        
+        # Add username and user photo URL to post data
+        user_data = request.state.user_data
+        post_data['username'] = user_data.get('username', '')
+        post_data['userPhotoURL'] = user_data.get('photoURL', '')
+        
+        # Store post data in Firestore
+        db.collection('Posts').document(post_id).set(post_data)
+        
+        # Also add to user's posts collection
+        db.collection('Users').document(user_id).collection('Posts').document(post_id).set({
+            'postId': post_id,
+            'createdAt': firestore.SERVER_TIMESTAMP
+        })
+        
+        # Redirect to home page with success message
+        return RedirectResponse(url="/home?message=Post created successfully", status_code=status.HTTP_303_SEE_OTHER)
+        
+    except Exception as e:
+        print(f"Post creation error: {str(e)}")
+        return templates.TemplateResponse(
+            "create_post.html", 
+            {
+                "request": request,
+                "user": request.state.user,
+                "user_data": request.state.user_data,
+                "error": f"Failed to create post: {str(e)}"
+            }
+        )
+
 if __name__ == "__main__":
     uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)

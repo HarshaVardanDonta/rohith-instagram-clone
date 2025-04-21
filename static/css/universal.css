@@ -590,6 +590,225 @@ button:hover {
   font-size: 11px;
 }
 
+/* Create Post Page Styles */
+.create-post-form {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 25px;
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+.container h1 {
+  text-align: center;
+  margin: 25px 0 15px;
+  font-size: 24px;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #842029;
+  padding: 10px 15px;
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-color);
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(66, 103, 178, 0.2);
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.preview-container {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+#image-preview {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin: 0 auto;
+}
+
+.submit-btn {
+  background-color: var(--primary-color);
+  color: var(--white);
+  padding: 12px 20px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.submit-btn:hover {
+  background-color: var(--accent-color);
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.nav-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  transition: all 0.2s;
+  text-align: center;
+  font-size: 14px;
+}
+
+.nav-button:hover {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+/* Custom file input styling */
+.custom-file-input {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.file-input-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  font-weight: 600;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-top: 5px;
+}
+
+.file-input-label:hover {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+.file-input-label i {
+  margin-right: 8px;
+}
+
+input[type="file"] {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+/* Additional Create Post Styles */
+.upload-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  border: 2px dashed var(--border-color);
+  background-color: var(--bg-color);
+  border-radius: var(--border-radius);
+  color: var(--light-text);
+  margin-bottom: 20px;
+}
+
+.upload-prompt i {
+  font-size: 36px;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.upload-prompt p {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.character-count {
+  text-align: right;
+  font-size: 12px;
+  color: var(--light-text);
+  margin-top: 8px;
+}
+
+.text-danger {
+  color: var(--red);
+  font-weight: bold;
+}
+
+/* Media queries for responsive design */
+@media (min-width: 768px) {
+  .create-post-form {
+    padding: 30px;
+  }
+  
+  .container h1 {
+    font-size: 28px;
+    margin: 35px 0 25px;
+  }
+  
+  .preview-container {
+    margin-top: 20px;
+  }
+  
+  #image-preview {
+    max-height: 400px;
+  }
+}
+
 /* Tablet styles */
 @media (min-width: 576px) {
   .profile-image {
