@@ -279,7 +279,7 @@ main {
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
-    width: 180px;
+    width: 220px; /* Increased width for more content space */
     max-width: calc(100vw - 40px);
     background-color: var(--white);
     border-radius: 8px;
@@ -290,6 +290,7 @@ main {
     transition: all 0.3s ease;
     z-index: 200;
     border: 1px solid var(--secondary-color);
+    overflow: hidden; /* Prevent content from spilling out */
 }
 
 .user-menu:hover .user-dropdown,
@@ -314,6 +315,7 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
+    white-space: nowrap; /* Keep on single line with ellipsis */
 }
 
 .user-dropdown-email {
@@ -323,6 +325,7 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
+    white-space: nowrap; /* Keep on single line with ellipsis */
 }
 
 .user-dropdown-links {
@@ -364,6 +367,7 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: calc(100% - 10px); /* Ensure text doesn't push against the right icon */
 }
 
 .user-dropdown-links li a i.right-icon {
@@ -432,4 +436,329 @@ main {
     .user-dropdown-email {
         max-width: 170px;
     }
+}
+
+/* OR Divider */
+.or-divider {
+    display: flex;
+    align-items: center;
+    margin: 18px 0;
+}
+
+.or-divider::before,
+.or-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.or-divider span {
+    padding: 0 16px;
+    color: var(--light-text);
+    font-weight: 600;
+}
+
+/* Login with Facebook */
+.login-with-facebook {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.login-with-facebook a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.login-with-facebook a i {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+/* App download */
+.app-download {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.app-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.app-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #212529;
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.app-button:hover {
+    background-color: #343a40;
+}
+
+.app-button i {
+    margin-left: 8px;
+}
+
+/* Signup specific */
+.signup-intro {
+    color: var(--light-text);
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 20px;
+    margin: 0 40px 20px;
+    text-align: center;
+}
+
+.terms {
+    color: var(--light-text);
+    font-size: 12px;
+    text-align: center;
+    margin: 10px 0;
+}
+
+.terms a {
+    color: var(--light-text);
+    font-weight: 600;
+}
+
+/* Form title and subtitle */
+.form-title {
+    text-align: center;
+    margin: 15px 0 5px;
+    color: var(--text-color);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.form-subtitle {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--light-text);
+    font-size: 14px;
+}
+
+/* Reset link container */
+.reset-link-container {
+    background-color: #e9ecef;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    word-break: break-all;
+}
+
+.reset-link-container p {
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #495057;
+}
+
+.reset-link {
+    font-size: 11px;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+/* Home page styles */
+.home-container {
+    width: 100%;
+    max-width: 975px;
+    margin: 0 auto;
+}
+
+/* Additional Profile page styles */
+.profile-container {
+    max-width: 975px;
+    margin: 0 auto;
+    padding-top: 30px;
+}
+
+.profile-header {
+    display: flex;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    margin-right: 30px;
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-placeholder i {
+    font-size: 60px;
+    color: #adb5bd;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-info h1 {
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 10px;
+}
+
+.profile-stats {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.stat {
+    margin-right: 40px;
+    font-size: 16px;
+}
+
+.profile-fullname {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.edit-profile-btn {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 5px 9px;
+    margin-top: 10px;
+}
+
+.edit-profile-btn:hover {
+    background-color: var(--bg-color);
+}
+
+.profile-content {
+    margin-top: 20px;
+}
+
+.profile-tabs {
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--border-color);
+}
+
+.profile-tabs a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--light-text);
+    padding: 15px 0;
+    margin: 0 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.profile-tabs a.active {
+    color: var(--primary-color);
+    border-top: 1px solid var (--primary-color);
+    margin-top: -1px;
+}
+
+.profile-tabs a i {
+    margin-right: 5px;
+}
+
+.profile-posts {
+    padding: 20px 0;
+}
+
+.no-posts {
+    text-align: center;
+    color: var(--light-text);
+    padding: 40px 0;
+    font-weight: 500;
+}
+
+/* Edit profile styles */
+.edit-profile-container {
+    max-width: 500px;
+    margin: 80px auto 0;
+    padding: 20px;
+    background-color: var(--white);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.edit-profile-container h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.profile-photo-upload {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.current-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 20px;
+}
+
+.current-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upload-controls {
+    flex: 1;
+}
+
+.upload-controls label {
+    display: inline-block;
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+.upload-controls input[type="file"] {
+    display: none;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
 }
