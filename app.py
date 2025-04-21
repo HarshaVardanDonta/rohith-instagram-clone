@@ -139,6 +139,14 @@ async def signup(
 ):
     """Create a new user"""
     try:
+        # Check if username already exists
+        username_query = db.collection('Users').where('username', '==', username).limit(1).get()
+        if len(username_query) > 0:
+            return templates.TemplateResponse(
+                "signup.html", 
+                {"request": request, "error": "Username already taken. Please choose a different username."}
+            )
+
         # Create the user in Firebase Authentication
         user = auth.create_user(
             email=email,
@@ -168,24 +176,30 @@ async def signup(
         return RedirectResponse(url="/login?message=Account created! Please log in.", status_code=status.HTTP_303_SEE_OTHER)
     
     except firebase_admin.exceptions.FirebaseError as e:
-        # Handle Firebase errors
         error_message = "An error occurred during signup. Please try again."
-        if "EMAIL_EXISTS" in str(e):
-            error_message = "Email already in use. Please use a different email."
-        elif "INVALID_EMAIL" in str(e):
-            error_message = "The email address is not valid."
-        elif "WEAK_PASSWORD" in str(e):
-            error_message = "Password should be at least 6 characters."
+        error_code = getattr(e, 'code', None)
         
+        # Handle specific Firebase error codes
+        if error_code == 'EMAIL_EXISTS' or 'email-already-exists' in str(e).lower():
+            error_message = "Email already in use. Please use a different email."
+        elif error_code == 'INVALID_EMAIL' or 'invalid-email' in str(e).lower():
+            error_message = "The email address is not valid."
+        elif error_code == 'WEAK_PASSWORD' or 'weak-password' in str(e).lower():
+            error_message = "Password is too weak. Please use a stronger password (at least 6 characters)."
+        
+        print(f"Firebase error during signup: {str(e)}")
         return templates.TemplateResponse(
             "signup.html", 
             {"request": request, "error": error_message}
         )
     
     except Exception as e:
+        # Log the full error for debugging purposes
+        print(f"Unexpected error during signup: {str(e)}")
+        
         return templates.TemplateResponse(
             "signup.html", 
-            {"request": request, "error": f"An unexpected error occurred: {str(e)}"}
+            {"request": request, "error": "An unexpected error occurred. Please try again later."}
         )
 
 @app.get("/login", response_class=HTMLResponse)
