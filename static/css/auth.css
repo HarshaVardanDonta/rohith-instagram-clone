@@ -27,14 +27,15 @@ body:not(.is-authenticated) .auth-hidden {
     display: block;
 }
 
-/* User profile dropdown styles */
+/* User profile dropdown styles - UPDATED WITH RESPONSIVE DESIGN */
 .user-menu {
     position: relative;
+    cursor: pointer;
 }
 
 .user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     cursor: pointer;
     overflow: hidden;
@@ -42,7 +43,7 @@ body:not(.is-authenticated) .auth-hidden {
     align-items: center;
     justify-content: center;
     background-color: var(--secondary-color);
-    border: 2px solid var(--white);
+    border: 2px solid var(--primary-color);
     transition: all 0.2s ease;
 }
 
@@ -57,34 +58,33 @@ body:not(.is-authenticated) .auth-hidden {
     font-size: 18px;
 }
 
-.user-avatar:hover {
-    box-shadow: 0 0 0 2px var(--secondary-color);
-}
-
 .user-dropdown {
     position: absolute;
-    top: 45px;
+    top: calc(100% + 10px);
     right: 0;
+    width: 180px; /* Reduced from 220px for better fit */
+    max-width: calc(100vw - 40px); /* Responsive width */
     background-color: var(--white);
     border-radius: 8px;
-    box-shadow: var(--shadow);
-    width: 200px;
-    z-index: 100;
-    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
+    transform: translateY(10px);
     transition: all 0.3s ease;
+    z-index: 200;
+    border: 1px solid var(--secondary-color);
 }
 
-.user-menu.open .user-dropdown {
+.user-menu:hover .user-dropdown,
+.user-menu:focus-within .user-dropdown,
+.user-dropdown:hover {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
 }
 
 .user-dropdown-header {
-    padding: 15px;
+    padding: 12px;
     border-bottom: 1px solid var(--secondary-color);
 }
 
@@ -93,51 +93,98 @@ body:not(.is-authenticated) .auth-hidden {
     font-size: 14px;
     color: var(--text-color);
     margin-bottom: 3px;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .user-dropdown-email {
     font-size: 12px;
     color: var(--light-text);
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .user-dropdown-links {
     list-style: none;
+    padding: 5px 0;
+    margin: 0;
 }
 
 .user-dropdown-links li {
-    border-bottom: 1px solid var(--secondary-color);
+    width: 100%;
 }
 
-.user-dropdown-links li:last-child {
-    border-bottom: none;
-}
-
-.user-dropdown-links a {
+.user-dropdown-links li a {
+    padding: 10px 12px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 15px;
+    justify-content: space-between;
     color: var(--text-color);
     text-decoration: none;
-    font-size: 14px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.user-dropdown-links a:hover {
+.user-dropdown-links li a .menu-item-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0; /* Important for ellipsis to work */
+}
+
+.user-dropdown-links li a .menu-item-content i {
+    flex-shrink: 0;
+}
+
+.menu-item-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-dropdown-links li a i.right-icon {
+    font-size: 10px;
+    color: var(--light-text);
+    margin-left: 5px;
+    flex-shrink: 0;
+}
+
+.user-dropdown-links li a:hover {
     background-color: var(--secondary-color);
     color: var(--primary-color);
 }
 
-.user-dropdown-links a i {
-    font-size: 16px;
-    width: 18px;
+.user-dropdown-links li a:hover i.right-icon {
+    color: var(--primary-color);
+}
+
+.user-dropdown-links li a i {
+    width: 16px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .logout-link {
-    color: #dc3545 !important;
+    color: #e74c3c !important;
+    font-weight: 500;
 }
 
-.logout-link:hover {
-    background-color: #f8d7da !important;
+/* Responsive styles for dropdown */
+@media (max-width: 480px) {
+    .user-dropdown {
+        width: 200px;
+        right: -10px;
+    }
+    
+    .user-dropdown-name, 
+    .user-dropdown-email {
+        max-width: 170px;
+    }
 }

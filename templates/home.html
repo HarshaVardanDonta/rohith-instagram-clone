@@ -4,104 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - Social</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/universal.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/auth.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #4267B2;
-            --secondary-color: #E1E9F6;
-            --accent-color: #1877F2;
-            --text-color: #333333;
-            --light-text: #8E8E8E;
-            --bg-color: #F5F7FA;
-            --white: #FFFFFF;
-            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-        }
-        
-        header {
-            background-color: var(--white);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 15px 0;
-        }
-        
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-        
-        .logo h1 {
-            color: var(--primary-color);
-            font-weight: 600;
-            font-size: 24px;
-            letter-spacing: -0.5px;
-        }
-        
-        .search {
-            flex: 0 0 300px;
-            position: relative;
-        }
-        
-        .search input {
-            width: 100%;
-            padding: 10px 15px;
-            border-radius: 20px;
-            border: 1px solid #E1E1E1;
-            background-color: var(--secondary-color);
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s ease;
-        }
-        
-        .search input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(66, 103, 178, 0.2);
-        }
-        
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 25px;
-        }
-        
-        nav a {
-            color: var(--text-color);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 400;
-            font-size: 14px;
-            transition: color 0.2s ease;
-        }
-        
-        nav a:hover {
-            color: var(--primary-color);
-        }
-        
-        nav a i {
-            font-size: 18px;
-        }
-        
         .home-container {
             max-width: 1000px;
             margin: 30px auto;
@@ -118,7 +25,7 @@
         .feed h2 {
             font-size: 22px;
             margin-bottom: 15px;
-            color: var (--primary-color);
+            color: var(--primary-color);
         }
         
         .feed p {
@@ -154,9 +61,19 @@
                                 <div class="user-dropdown-email">{{ user_data.email }}</div>
                             </div>
                             <ul class="user-dropdown-links">
-                                <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
-                                <li><a href="/logout" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                                <li><a href="/profile">
+                                    <div class="menu-item-content">
+                                        <i class="fas fa-user"></i>
+                                        <span class="menu-item-text">Profile</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right right-icon"></i>
+                                </a></li>
+                                <li><a href="/logout" class="logout-link">
+                                    <div class="menu-item-content">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span class="menu-item-text">Logout</span>
+                                    </div>
+                                </a></li>
                             </ul>
                         </div>
                     </li>

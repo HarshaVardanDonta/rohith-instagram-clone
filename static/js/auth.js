@@ -36,17 +36,42 @@ function initAuth() {
     const userMenu = document.querySelector('.user-menu');
     if (userMenu) {
         const userAvatar = userMenu.querySelector('.user-avatar');
+        const dropdown = userMenu.querySelector('.user-dropdown');
         
         if (userAvatar) {
+            // For click events (especially on mobile)
             userAvatar.addEventListener('click', function(e) {
                 e.preventDefault();
-                userMenu.classList.toggle('open');
+                e.stopPropagation();
+                
+                // Toggle dropdown visibility
+                if (dropdown.style.opacity === '1') {
+                    dropdown.style.opacity = '0';
+                    dropdown.style.visibility = 'hidden';
+                    dropdown.style.transform = 'translateY(10px)';
+                } else {
+                    dropdown.style.opacity = '1';
+                    dropdown.style.visibility = 'visible';
+                    dropdown.style.transform = 'translateY(0)';
+                }
             });
             
             // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
                 if (!userMenu.contains(e.target)) {
-                    userMenu.classList.remove('open');
+                    dropdown.style.opacity = '0';
+                    dropdown.style.visibility = 'hidden';
+                    dropdown.style.transform = 'translateY(10px)';
+                }
+            });
+            
+            // For accessibility - allow keyboard navigation
+            userAvatar.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    dropdown.style.opacity = '1';
+                    dropdown.style.visibility = 'visible';
+                    dropdown.style.transform = 'translateY(0)';
                 }
             });
         }
