@@ -14,22 +14,47 @@ import uvicorn
 from starlette.middleware.base import BaseHTTPMiddleware
 import time
 from datetime import datetime, timedelta
+from google.cloud import storage as gcs
 
 # Load environment variables
 load_dotenv()
 
-# Initialize Firebase
+# Initialize Firebase with service account for auth and Firestore
+firebase_cred_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH')
+gcs_cred_path = os.getenv('GOOGLE_CLOUD_SERVICE_ACCOUNT_PATH')
+bucket_name = os.getenv('GOOGLE_CLOUD_STORAGE_BUCKET')  # Get bucket name from environment
+
 try:
-    # Try to initialize with environment variables
-    firebase_admin.initialize_app(options={
-        'projectId': os.getenv('FIREBASE_PROJECT_ID'),
-    })
+    # Initialize Firebase with the Firebase service account
+    if firebase_cred_path and os.path.exists(firebase_cred_path):
+        cred = credentials.Certificate(firebase_cred_path)
+        firebase_admin.initialize_app(cred, {
+            'projectId': os.getenv('FIREBASE_PROJECT_ID'),
+        })
+    else:
+        # Fallback to default credentials if path not provided or file doesn't exist
+        firebase_admin.initialize_app(options={
+            'projectId': os.getenv('FIREBASE_PROJECT_ID'),
+        })
 except ValueError as e:
     # If already initialized or error, print the error message and continue
     print(f"Firebase initialization note: {e}")
 
 # Initialize Firestore client
 db = firestore.client()
+
+# Initialize Google Cloud Storage client with separate service account
+gcs_client = None
+try:
+    if gcs_cred_path and os.path.exists(gcs_cred_path):
+        gcs_client = gcs.Client.from_service_account_json(gcs_cred_path)
+        print("Google Cloud Storage client initialized with service account")
+    else:
+        print("Warning: Google Cloud Storage service account path not found or invalid")
+        # Fallback to default credentials
+        gcs_client = gcs.Client()
+except Exception as e:
+    print(f"Error initializing Google Cloud Storage client: {e}")
 
 # Create FastAPI app
 app = FastAPI(title="Social")
@@ -434,9 +459,6 @@ async def edit_profile(
         # Check if a profile photo was uploaded
         if profile_photo and profile_photo.filename:
             try:
-                # Initialize Firebase storage bucket
-                bucket = storage.bucket(app=firebase_admin.get_app(), name=os.getenv('FIREBASE_STORAGE_BUCKET'))
-                
                 # Create a unique filename to avoid overwriting
                 file_extension = os.path.splitext(profile_photo.filename)[1]
                 file_name = f"profile_photos/{user_id}/{uuid.uuid4()}{file_extension}"
@@ -445,26 +467,24 @@ async def edit_profile(
                 file_content = await profile_photo.read()
                 
                 # Upload the file to Firebase Storage
-                blob = bucket.blob(file_name)
+                blob = gcs_client.bucket(bucket_name).blob(file_name)
                 blob.upload_from_string(
                     file_content,
                     content_type=profile_photo.content_type
                 )
                 
-                # Make the file publicly accessible
-                blob.make_public()
-                
-                # Get the public URL
-                photo_url = blob.public_url
+                # Don't use make_public() when uniform bucket-level access is enabled
+                # Instead, construct the public URL directly if the bucket has public access
+                image_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
                 
                 # Add to updates
-                updates['photoURL'] = photo_url
+                updates['photoURL'] = image_url
                 
                 # Update user profile in Firebase Auth
                 auth.update_user(
                     user_id,
                     display_name=full_name,
-                    photo_url=photo_url
+                    photo_url=image_url
                 )
             except Exception as storage_error:
                 print(f"Profile photo upload error: {storage_error}")
@@ -547,9 +567,6 @@ async def create_post(
                 }
             )
         
-        # Initialize Firebase storage bucket
-        bucket = storage.bucket(app=firebase_admin.get_app(), name=os.getenv('FIREBASE_STORAGE_BUCKET'))
-        
         # Create a unique filename to avoid overwriting
         post_id = str(uuid.uuid4())
         file_extension = os.path.splitext(image.filename)[1]
@@ -559,17 +576,27 @@ async def create_post(
         file_content = await image.read()
         
         # Upload the file to Firebase Storage
-        blob = bucket.blob(file_name)
-        blob.upload_from_string(
-            file_content,
-            content_type=image.content_type
-        )
-        
-        # Make the file publicly accessible
-        blob.make_public()
-        
-        # Get the public URL
-        image_url = blob.public_url
+        try:
+            blob = gcs_client.bucket(bucket_name).blob(file_name)
+            blob.upload_from_string(
+                file_content,
+                content_type=image.content_type
+            )
+            
+            # Don't use make_public() when uniform bucket-level access is enabled
+            # Instead, construct the public URL directly if the bucket has public access
+            image_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
+            
+            print(f"Successfully uploaded image to: {file_name}")
+        except Exception as upload_error:
+            print(f"Error uploading image: {upload_error}")
+            return templates.TemplateResponse(
+                "create_post.html", 
+                {
+                    "request": request, 
+                    "error": f"Failed to upload image: {str(upload_error)}"
+                }
+            )
         
         # Create post data
         post_data = {
@@ -577,6 +604,7 @@ async def create_post(
             'userId': user_id,
             'description': description,
             'imageUrl': image_url,
+            'imagePath': file_name,  # Store the path for future reference
             'createdAt': firestore.SERVER_TIMESTAMP,
             'likes': 0,
             'comments': 0
