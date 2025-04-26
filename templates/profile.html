@@ -233,6 +233,230 @@
             border-radius: 4px;
         }
         
+        /* Post Modal Styles */
+        .post-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .post-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            margin: auto;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--light-text);
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .close-modal:hover {
+            color: var(--text-color);
+        }
+        
+        .post-detail-container {
+            display: flex;
+            height: 80vh;
+            max-height: 700px;
+        }
+        
+        .post-image-container {
+            flex: 6;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .post-image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .post-info-container {
+            flex: 4;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-color);
+            max-width: 400px;
+        }
+        
+        .post-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .post-user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .post-user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .post-user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .post-username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .post-description-container {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .post-description-container p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-color);
+        }
+        
+        .post-stats-container {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 13px;
+        }
+        
+        .post-likes, .post-comments-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .post-likes i {
+            color: #e74c3c;
+        }
+        
+        .post-comments-container {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .post-comments-container h4 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: var(--text-color);
+        }
+        
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .no-comments {
+            color: var(--light-text);
+            font-size: 13px;
+            text-align: center;
+            padding: 10px 0;
+        }
+        
+        .add-comment-container {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .add-comment-container textarea {
+            flex: 1;
+            min-height: 40px;
+            resize: none;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        
+        .comment-btn {
+            width: auto;
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .comment-btn:hover {
+            background-color: var(--accent-color);
+        }
+        
+        /* Responsive styles for modal */
+        @media (max-width: 768px) {
+            .post-detail-container {
+                flex-direction: column;
+                height: auto;
+                max-height: none;
+            }
+            
+            .post-image-container {
+                height: 50vh;
+                flex: none;
+            }
+            
+            .post-info-container {
+                max-width: none;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+            }
+            
+            .modal-content {
+                width: 95%;
+                height: auto;
+                max-height: 95vh;
+            }
+        }
+        
         /* Responsive grid */
         @media (max-width: 768px) {
             .posts-grid {
@@ -374,7 +598,52 @@
             </div>
         </div>
     </main>
-    
+
+    <!-- Add post modal dialog -->
+    <div id="post-modal" class="post-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="post-detail-container">
+                <div class="post-image-container">
+                    <img id="modal-post-image" src="" alt="Post image">
+                </div>
+                <div class="post-info-container">
+                    <div class="post-header">
+                        <div class="post-user-info">
+                            <div class="post-user-avatar">
+                                <img id="modal-user-avatar" src="" alt="">
+                            </div>
+                            <div class="post-username" id="modal-username"></div>
+                        </div>
+                    </div>
+                    <div class="post-description-container">
+                        <p id="modal-description"></p>
+                    </div>
+                    <div class="post-stats-container">
+                        <div class="post-likes">
+                            <i class="fas fa-heart"></i> <span id="modal-likes">0</span> likes
+                        </div>
+                        <div class="post-comments-count">
+                            <i class="fas fa-comment"></i> <span id="modal-comments-count">0</span> comments
+                        </div>
+                        <div class="post-date" id="modal-post-date"></div>
+                    </div>
+                    <div class="post-comments-container">
+                        <h4>Comments</h4>
+                        <div id="modal-comments" class="comments-list">
+                            <!-- Comments will be dynamically loaded here -->
+                            <p class="no-comments">No comments yet.</p>
+                        </div>
+                    </div>
+                    <div class="add-comment-container">
+                        <textarea id="comment-input" placeholder="Add a comment..."></textarea>
+                        <button id="post-comment-btn" class="comment-btn">Post</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
 </body>
 </html>

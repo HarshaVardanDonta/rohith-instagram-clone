@@ -508,9 +508,11 @@ async def edit_profile(
                     content_type=profile_photo.content_type
                 )
                 
-                # For buckets with uniform bucket-level access, we don't call make_public()
-                # Instead construct the public URL directly if the bucket has public access
-                image_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
+                # Make the blob publicly accessible
+                blob.make_public()
+                
+                # Get the public URL
+                image_url = blob.public_url
                 
                 # Add to updates
                 updates['photoURL'] = image_url
