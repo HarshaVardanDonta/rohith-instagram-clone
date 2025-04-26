@@ -380,14 +380,49 @@ async def forgot_password(
 async def profile(request: Request):
     """Render profile page"""
     # User data is now available in request.state
-    return templates.TemplateResponse(
-        "profile.html", 
-        {
-            "request": request, 
-            "user": request.state.user,
-            "user_data": request.state.user_data
-        }
-    )
+    user_id = request.state.user.uid
+    
+    try:
+        # Fetch user's posts from Firestore in reverse chronological order
+        posts_ref = db.collection('Posts').where('userId', '==', user_id).order_by('createdAt', direction=firestore.Query.DESCENDING).limit(30)
+        posts = []
+        
+        # Get the posts and format them for the template
+        for post in posts_ref.stream():
+            post_data = post.to_dict()
+            # Add post ID if not present in the data
+            if 'postId' not in post_data:
+                post_data['postId'] = post.id
+            posts.append(post_data)
+        
+        # Count the posts
+        post_count = len(posts)
+        
+        # Update user_data with post count
+        user_data = request.state.user_data
+        user_data['post_count'] = post_count
+        
+        return templates.TemplateResponse(
+            "profile.html", 
+            {
+                "request": request, 
+                "user": request.state.user,
+                "user_data": user_data,
+                "posts": posts
+            }
+        )
+    except Exception as e:
+        print(f"Error fetching posts: {str(e)}")
+        # If there's an error, still render the page but without posts
+        return templates.TemplateResponse(
+            "profile.html", 
+            {
+                "request": request, 
+                "user": request.state.user,
+                "user_data": request.state.user_data,
+                "posts": []
+            }
+        )
 
 @app.get("/edit-profile", response_class=HTMLResponse)
 async def edit_profile_page(request: Request):
@@ -473,8 +508,8 @@ async def edit_profile(
                     content_type=profile_photo.content_type
                 )
                 
-                # Don't use make_public() when uniform bucket-level access is enabled
-                # Instead, construct the public URL directly if the bucket has public access
+                # For buckets with uniform bucket-level access, we don't call make_public()
+                # Instead construct the public URL directly if the bucket has public access
                 image_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
                 
                 # Add to updates
@@ -576,27 +611,19 @@ async def create_post(
         file_content = await image.read()
         
         # Upload the file to Firebase Storage
-        try:
-            blob = gcs_client.bucket(bucket_name).blob(file_name)
-            blob.upload_from_string(
-                file_content,
-                content_type=image.content_type
-            )
-            
-            # Don't use make_public() when uniform bucket-level access is enabled
-            # Instead, construct the public URL directly if the bucket has public access
-            image_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
-            
-            print(f"Successfully uploaded image to: {file_name}")
-        except Exception as upload_error:
-            print(f"Error uploading image: {upload_error}")
-            return templates.TemplateResponse(
-                "create_post.html", 
-                {
-                    "request": request, 
-                    "error": f"Failed to upload image: {str(upload_error)}"
-                }
-            )
+        blob = gcs_client.bucket(bucket_name).blob(file_name)
+        blob.upload_from_string(
+            file_content,
+            content_type=image.content_type
+        )
+        
+        # Make the blob publicly accessible
+        blob.make_public()
+        
+        # Get the public URL
+        image_url = blob.public_url
+        
+        print(f"Successfully uploaded image to: {file_name}")
         
         # Create post data
         post_data = {

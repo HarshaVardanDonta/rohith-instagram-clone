@@ -153,13 +153,99 @@
         }
         
         .profile-posts {
-            padding: 40px 20px;
-            text-align: center;
+            padding: 20px;
         }
         
         .no-posts {
             color: var(--light-text);
             font-size: 14px;
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        /* Posts grid styles */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+        
+        .post-item {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1/1;
+            overflow: hidden;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .post-item:hover {
+            transform: scale(0.98);
+        }
+        
+        .post-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .post-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+        
+        .post-item:hover .post-overlay {
+            opacity: 1;
+        }
+        
+        .post-stats {
+            display: flex;
+            gap: 20px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .post-stats div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .post-date {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: white;
+            font-size: 12px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        
+        /* Responsive grid */
+        @media (max-width: 768px) {
+            .posts-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .posts-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
         }
     </style>
     <!-- Firebase SDK -->
@@ -241,7 +327,7 @@
                 <div class="profile-info">
                     <h1>{{ user_data.username }}</h1>
                     <div class="profile-stats">
-                        <div class="stat">0 posts</div>
+                        <div class="stat">{{ user_data.post_count }} posts</div>
                         <div class="stat">0 followers</div>
                         <div class="stat">0 following</div>
                     </div>
@@ -258,7 +344,33 @@
                 </div>
                 
                 <div class="profile-posts">
-                    <p class="no-posts">No posts yet.</p>
+                    {% if posts and posts|length > 0 %}
+                        <div class="posts-grid">
+                            {% for post in posts %}
+                                <div class="post-item">
+                                    <img src="{{ post.imageUrl }}" alt="Post by {{ post.username }}">
+                                    <p>{{post.imageUrl}}</p>
+                                    <div class="post-overlay">
+                                        <div class="post-stats">
+                                            <div>
+                                                <i class="fas fa-heart"></i> {{ post.likes }}
+                                            </div>
+                                            <div>
+                                                <i class="fas fa-comment"></i> {{ post.comments }}
+                                            </div>
+                                        </div>
+                                        {% if post.createdAt %}
+                                            <div class="post-date">
+                                                {{ post.createdAt.strftime('%b %d, %Y') if post.createdAt.strftime else post.createdAt }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="no-posts">No posts yet.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
