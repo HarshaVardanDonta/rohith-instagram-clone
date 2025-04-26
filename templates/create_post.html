@@ -29,7 +29,7 @@
         
         <form class="create-post-form" action="/create" method="post" enctype="multipart/form-data">
             <div class="preview-container" id="preview-section">
-                <img id="image-preview" src="" alt="Preview" style="display: none;">
+                <img id="image-preview" src="" alt="Preview" class="hidden">
                 <div id="upload-prompt" class="upload-prompt">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <p>Upload an image for your post</p>
@@ -72,8 +72,8 @@
             
             reader.onload = function() {
                 preview.src = reader.result;
-                preview.style.display = 'block';
-                uploadPrompt.style.display = 'none';
+                preview.classList.remove('hidden');
+                uploadPrompt.classList.add('hidden');
             }
             
             reader.readAsDataURL(event.target.files[0]);
