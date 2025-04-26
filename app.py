@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import uuid
+import io
 import firebase_admin
 from firebase_admin import credentials, auth, firestore, storage
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, File, UploadFile
@@ -15,9 +16,67 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import time
 from datetime import datetime, timedelta
 from google.cloud import storage as gcs
+from PIL import Image
 
 # Load environment variables
 load_dotenv()
+
+# Helper function to compress image
+async def compress_image(file_content, content_type, max_size=(1024, 1024), quality=85):
+    """
+    Compress an image without significant quality loss
+    - file_content: The binary content of the image file
+    - content_type: The MIME type of the image
+    - max_size: The maximum dimensions (width, height) to resize to if larger
+    - quality: JPEG/WebP compression quality (0-100)
+    
+    Returns: (compressed_content, new_content_type)
+    """
+    try:
+        # Create PIL Image object from binary content
+        image = Image.open(io.BytesIO(file_content))
+        
+        # Preserve original format for saving
+        if content_type == "image/jpeg" or content_type == "image/jpg":
+            format_name = "JPEG"
+            new_content_type = "image/jpeg"
+        elif content_type == "image/png":
+            format_name = "PNG" 
+            new_content_type = "image/png"
+        elif content_type == "image/gif":
+            format_name = "GIF"
+            new_content_type = "image/gif"
+        elif content_type == "image/webp":
+            format_name = "WEBP"
+            new_content_type = "image/webp"
+        else:
+            # Default to JPEG for unknown formats
+            format_name = "JPEG"
+            new_content_type = "image/jpeg"
+        
+        # Resize if the image is larger than max_size
+        if image.width > max_size[0] or image.height > max_size[1]:
+            image.thumbnail(max_size, Image.Resampling.LANCZOS)
+        
+        # Save the processed image
+        output = io.BytesIO()
+        
+        # PNG should be compressed differently (no quality parameter)
+        if format_name == "PNG":
+            image.save(output, format=format_name, optimize=True)
+        elif format_name == "GIF":
+            # GIF doesn't use quality param
+            image.save(output, format=format_name)
+        else:
+            # JPEG and WEBP use quality param
+            image.save(output, format=format_name, quality=quality, optimize=True)
+        
+        output.seek(0)
+        return output.getvalue(), new_content_type
+    except Exception as e:
+        print(f"Image compression error: {str(e)}")
+        # Return original content if compression fails
+        return file_content, content_type
 
 # Initialize Firebase with service account for auth and Firestore
 firebase_cred_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH')
@@ -319,13 +378,40 @@ async def login(
 
 @app.get("/home", response_class=HTMLResponse)
 async def home(request: Request):
-    """Render home page"""
+    """Render home page with feed posts"""
     # User data is now available in request.state
-    return templates.TemplateResponse("home.html", {
-        "request": request, 
-        "user": request.state.user,
-        "user_data": request.state.user_data
-    })
+    user_id = request.state.user.uid
+    
+    try:
+        # Fetch recent posts for the feed, ordered by creation time (most recent first)
+        # In a real app, you'd fetch posts from users that the current user follows
+        # For demo purposes, we'll just get the most recent posts from all users
+        posts_ref = db.collection('Posts').order_by('createdAt', direction=firestore.Query.DESCENDING).limit(10)
+        feed_posts = []
+        
+        # Get the posts and format them for the template
+        for post in posts_ref.stream():
+            post_data = post.to_dict()
+            # Add post ID if not present in the data
+            if 'postId' not in post_data:
+                post_data['postId'] = post.id
+            feed_posts.append(post_data)
+            
+        return templates.TemplateResponse("home.html", {
+            "request": request, 
+            "user": request.state.user,
+            "user_data": request.state.user_data,
+            "feed_posts": feed_posts
+        })
+    except Exception as e:
+        print(f"Error fetching feed posts: {str(e)}")
+        # If there's an error, still render the page but without posts
+        return templates.TemplateResponse("home.html", {
+            "request": request, 
+            "user": request.state.user,
+            "user_data": request.state.user_data,
+            "feed_posts": []
+        })
 
 @app.get("/logout")
 async def logout():
@@ -501,11 +587,14 @@ async def edit_profile(
                 # Read the file content
                 file_content = await profile_photo.read()
                 
+                # Compress the image
+                compressed_content, content_type = await compress_image(file_content, profile_photo.content_type)
+                
                 # Upload the file to Firebase Storage
                 blob = gcs_client.bucket(bucket_name).blob(file_name)
                 blob.upload_from_string(
-                    file_content,
-                    content_type=profile_photo.content_type
+                    compressed_content,
+                    content_type=content_type
                 )
                 
                 # Make the blob publicly accessible
@@ -612,11 +701,14 @@ async def create_post(
         # Read the file content
         file_content = await image.read()
         
+        # Compress the image
+        compressed_content, content_type = await compress_image(file_content, image.content_type)
+        
         # Upload the file to Firebase Storage
         blob = gcs_client.bucket(bucket_name).blob(file_name)
         blob.upload_from_string(
-            file_content,
-            content_type=image.content_type
+            compressed_content,
+            content_type=content_type
         )
         
         # Make the blob publicly accessible

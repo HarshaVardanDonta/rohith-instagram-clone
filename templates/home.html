@@ -12,23 +12,238 @@
             max-width: 1000px;
             margin: 30px auto;
             padding: 0 20px;
+            display: flex;
+            gap: 30px;
         }
         
         .feed {
+            flex: 7;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            flex: 3;
+        }
+        
+        .post-card {
             background-color: var(--white);
             border-radius: 10px;
-            padding: 25px;
+            overflow: hidden;
             box-shadow: var(--shadow);
         }
         
-        .feed h2 {
+        .post-card-header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .post-card-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .post-card-user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .post-card-user-info {
+            flex: 1;
+        }
+        
+        .post-card-username {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-color);
+        }
+        
+        .post-card-timestamp {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+        
+        .post-card-image {
+            width: 100%;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .post-card-image img {
+            width: 100%;
+            display: block;
+        }
+        
+        .post-card-actions {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .post-card-action {
             font-size: 22px;
-            margin-bottom: 15px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .post-card-action:hover {
             color: var(--primary-color);
         }
         
-        .feed p {
+        .post-card-likes {
+            padding: 0 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .post-card-caption {
+            padding: 0 16px 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        
+        .post-card-comments {
+            padding: 0 16px 12px;
+            font-size: 14px;
             color: var(--light-text);
+            cursor: pointer;
+        }
+        
+        .sidebar-box {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-box-header {
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            gap: 10px;
+        }
+        
+        .suggestion-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .suggestion-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .suggestion-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .suggestion-username {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .suggestion-fullname {
+            font-size: 12px;
+            color: var(--light-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .follow-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .follow-btn:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .welcome-message {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(to right, var(--secondary-color), var(--bg-color));
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        
+        .welcome-message h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+        
+        .welcome-actions {
+            margin-top: 20px;
+        }
+        
+        .welcome-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .welcome-button:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .home-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
         }
     </style>
     <!-- Firebase SDK -->
@@ -92,12 +307,258 @@
     <main>
         <div class="home-container">
             <div class="feed">
-                <h2>Welcome, {{ user_data.displayName }}</h2>
-                <p>Your feed will appear here.</p>
+                <div class="welcome-message">
+                    <h2>Welcome, {{ user_data.displayName }}!</h2>
+                    <p>Share your moments with your friends and discover content from people around the world.</p>
+                    <div class="welcome-actions">
+                        <a href="/create" class="welcome-button">
+                            <i class="fas fa-plus"></i> Create Post
+                        </a>
+                        <a href="/profile" class="welcome-button">
+                            <i class="fas fa-user"></i> View Profile
+                        </a>
+                    </div>
+                </div>
+                
+                {% if feed_posts and feed_posts|length > 0 %}
+                    {% for post in feed_posts %}
+                        <div class="post-card" data-post-id="{{ post.postId }}">
+                            <div class="post-card-header">
+                                <div class="post-card-user-avatar">
+                                    {% if post.userPhotoURL %}
+                                    <img src="{{ post.userPhotoURL }}" alt="{{ post.username }}">
+                                    {% else %}
+                                    <div class="profile-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="post-card-user-info">
+                                    <div class="post-card-username">{{ post.username }}</div>
+                                    <div class="post-card-timestamp">
+                                        {% if post.createdAt %}
+                                            {{ post.createdAt.strftime('%b %d, %Y') if post.createdAt.strftime else post.createdAt }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="post-card-image">
+                                <img src="{{ post.imageUrl }}" alt="Post by {{ post.username }}">
+                            </div>
+                            
+                            <div class="post-card-actions">
+                                <div class="post-card-action post-like-btn">
+                                    <i class="far fa-heart"></i>
+                                </div>
+                                <div class="post-card-action post-comment-btn">
+                                    <i class="far fa-comment"></i>
+                                </div>
+                                <div class="post-card-action">
+                                    <i class="far fa-paper-plane"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="post-card-likes">
+                                <span class="post-likes-count">{{ post.likes }}</span> likes
+                            </div>
+                            
+                            <div class="post-card-caption">
+                                <span class="post-username">{{ post.username }}</span> {{ post.description }}
+                            </div>
+                            
+                            <div class="post-card-comments">
+                                View all <span class="post-comments-count">{{ post.comments }}</span> comments
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="post-card">
+                        <div class="post-card-header">
+                            <div class="post-card-user-info" style="text-align: center; width: 100%; padding: 40px 20px;">
+                                <p>No posts in your feed yet.</p>
+                                <p>Try following some users or create your first post!</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
+        
+       
     </main>
     
     <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/post-dialog.js') }}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click event to all post cards
+            document.querySelectorAll('.post-card').forEach(postCard => {
+                // Get post elements
+                const postImage = postCard.querySelector('.post-card-image');
+                const commentBtn = postCard.querySelector('.post-comment-btn');
+                const likeBtn = postCard.querySelector('.post-like-btn');
+                const viewCommentsText = postCard.querySelector('.post-card-comments');
+                
+                // Add event listeners
+                const openPostModal = function() {
+                    const postId = postCard.getAttribute('data-post-id');
+                    const username = postCard.querySelector('.post-card-username').textContent;
+                    const userPhotoURL = postCard.querySelector('.post-card-user-avatar img')?.src || '';
+                    const imageUrl = postCard.querySelector('.post-card-image img').src;
+                    const description = postCard.querySelector('.post-card-caption').textContent.replace(username, '').trim();
+                    const likes = parseInt(postCard.querySelector('.post-likes-count').textContent);
+                    const comments = parseInt(postCard.querySelector('.post-comments-count').textContent);
+                    const createdAt = postCard.querySelector('.post-card-timestamp').textContent.trim();
+                    
+                    // Create post data object
+                    const postData = {
+                        postId,
+                        username,
+                        userPhotoURL,
+                        imageUrl,
+                        description,
+                        likes,
+                        comments,
+                        createdAt
+                    };
+                    
+                    // Get current user data
+                    const userData = {
+                        uid: '{{ user_data.uid }}',
+                        username: '{{ user_data.username }}',
+                        displayName: '{{ user_data.displayName }}',
+                        photoURL: '{{ user_data.photoURL }}'
+                    };
+                    
+                    // Open the modal with this data
+                    openPostDialog(postData, userData);
+                };
+                
+                // Image click opens modal
+                if (postImage) {
+                    postImage.addEventListener('click', openPostModal);
+                }
+                
+                // Comment button opens modal
+                if (commentBtn) {
+                    commentBtn.addEventListener('click', openPostModal);
+                }
+                
+                // View comments text opens modal
+                if (viewCommentsText) {
+                    viewCommentsText.addEventListener('click', openPostModal);
+                }
+                
+                // Like button functionality
+                if (likeBtn) {
+                    likeBtn.addEventListener('click', async function() {
+                        const postId = postCard.getAttribute('data-post-id');
+                        const likeIcon = likeBtn.querySelector('i');
+                        const likesCountElement = postCard.querySelector('.post-likes-count');
+                        const currentLikes = parseInt(likesCountElement.textContent);
+                        
+                        // Get current user data
+                        const userData = {
+                            uid: '{{ user_data.uid }}',
+                            username: '{{ user_data.username }}'
+                        };
+                        
+                        try {
+                            if (likeIcon.classList.contains('fas')) {
+                                // Unlike post
+                                const db = firebase.firestore();
+                                const postRef = db.collection('Posts').doc(postId);
+                                const userLikeRef = postRef.collection('Likes').doc(userData.uid);
+                                
+                                await db.runTransaction(async (transaction) => {
+                                    // Delete like document
+                                    transaction.delete(userLikeRef);
+                                    
+                                    // Update post likes count
+                                    transaction.update(postRef, { 
+                                        likes: firebase.firestore.FieldValue.increment(-1) 
+                                    });
+                                });
+                                
+                                // Update UI
+                                likeIcon.classList.replace('fas', 'far');
+                                likeIcon.style.color = '';
+                                likesCountElement.textContent = Math.max(0, currentLikes - 1);
+                            } else {
+                                // Like post
+                                const db = firebase.firestore();
+                                const postRef = db.collection('Posts').doc(postId);
+                                const userLikeRef = postRef.collection('Likes').doc(userData.uid);
+                                
+                                await db.runTransaction(async (transaction) => {
+                                    // Create like document
+                                    transaction.set(userLikeRef, {
+                                        userId: userData.uid,
+                                        username: userData.username,
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                    
+                                    // Update post likes count
+                                    transaction.update(postRef, { 
+                                        likes: firebase.firestore.FieldValue.increment(1) 
+                                    });
+                                });
+                                
+                                // Update UI
+                                likeIcon.classList.replace('far', 'fas');
+                                likeIcon.style.color = '#e74c3c';
+                                likesCountElement.textContent = currentLikes + 1;
+                                
+                                // Add like animation
+                                const likeAnim = document.createElement('div');
+                                likeAnim.className = 'like-animation';
+                                likeBtn.appendChild(likeAnim);
+                                setTimeout(() => likeAnim.remove(), 700);
+                            }
+                        } catch (error) {
+                            console.error('Error toggling like:', error);
+                        }
+                    });
+                }
+            });
+            
+            // Check if posts have been liked by the current user
+            async function checkLikedPosts() {
+                try {
+                    const db = firebase.firestore();
+                    const userId = '{{ user_data.uid }}';
+                    
+                    document.querySelectorAll('.post-card').forEach(async (postCard) => {
+                        const postId = postCard.getAttribute('data-post-id');
+                        const likeBtn = postCard.querySelector('.post-like-btn');
+                        
+                        if (postId && likeBtn) {
+                            const likeRef = await db.collection('Posts')
+                                .doc(postId)
+                                .collection('Likes')
+                                .doc(userId)
+                                .get();
+                                
+                            if (likeRef.exists) {
+                                // User has liked this post
+                                const likeIcon = likeBtn.querySelector('i');
+                                likeIcon.classList.replace('far', 'fas');
+                                likeIcon.style.color = '#e74c3c';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error checking liked posts:', error);
+                }
+            }
+            
+            // Run the check on page load
+            if (firebase && firebase.firestore) {
+                checkLikedPosts();
+            }
+        });
+    </script>
 </body>
 </html>
