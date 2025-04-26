@@ -148,7 +148,6 @@
     </main>
     
     <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
-    <script src="{{ url_for('static', path='/js/post-dialog.js') }}"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -159,57 +158,7 @@
                 const commentBtn = postCard.querySelector('.post-comment-btn');
                 const likeBtn = postCard.querySelector('.post-like-btn');
                 const viewCommentsText = postCard.querySelector('.post-card-comments');
-                
-                // Add event listeners
-                const openPostModal = function() {
-                    const postId = postCard.getAttribute('data-post-id');
-                    const username = postCard.querySelector('.post-card-username').textContent;
-                    const userPhotoURL = postCard.querySelector('.post-card-user-avatar img')?.src || '';
-                    const imageUrl = postCard.querySelector('.post-card-image img').src;
-                    const description = postCard.querySelector('.post-card-caption').textContent.replace(username, '').trim();
-                    const likes = parseInt(postCard.querySelector('.post-likes-count').textContent);
-                    const comments = parseInt(postCard.querySelector('.post-comments-count').textContent);
-                    const createdAt = postCard.querySelector('.post-card-timestamp').textContent.trim();
-                    
-                    // Create post data object
-                    const postData = {
-                        postId,
-                        username,
-                        userPhotoURL,
-                        imageUrl,
-                        description,
-                        likes,
-                        comments,
-                        createdAt
-                    };
-                    
-                    // Get current user data
-                    const userData = {
-                        uid: '{{ user_data.uid }}',
-                        username: '{{ user_data.username }}',
-                        displayName: '{{ user_data.displayName }}',
-                        photoURL: '{{ user_data.photoURL }}'
-                    };
-                    
-                    // Open the modal with this data
-                    openPostDialog(postData, userData);
-                };
-                
-                // Image click opens modal
-                if (postImage) {
-                    postImage.addEventListener('click', openPostModal);
-                }
-                
-                // Comment button opens modal
-                if (commentBtn) {
-                    commentBtn.addEventListener('click', openPostModal);
-                }
-                
-                // View comments text opens modal
-                if (viewCommentsText) {
-                    viewCommentsText.addEventListener('click', openPostModal);
-                }
-                
+
                 // Like button functionality
                 if (likeBtn) {
                     likeBtn.addEventListener('click', async function() {
