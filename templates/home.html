@@ -147,126 +147,420 @@
         </div>
     </main>
     
+    <!-- Post Modal -->
+    <div id="post-modal" class="post-modal">
+        <div class="close-modal">&times;</div>
+        <div class="modal-content">
+            <div class="post-detail-container">
+                <div class="post-image-container">
+                    <img id="modal-post-image" src="" alt="Post">
+                </div>
+                <div class="post-info-container">
+                    <div class="post-header">
+                        <div class="post-user-info">
+                            <div class="post-user-avatar">
+                                <img id="modal-user-avatar" src="" alt="">
+                            </div>
+                            <div>
+                                <div id="modal-username" class="post-username"></div>
+                                <div id="modal-post-timestamp" class="timestamp"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-description-container">
+                        <div id="modal-description"></div>
+                    </div>
+                    <div class="post-stats-container">
+                        <div class="post-likes">
+                            <i id="modal-like-icon" class="far fa-heart"></i> <span id="modal-likes">0</span> likes
+                        </div>
+                        <div class="post-comments-count">
+                            <span id="modal-comments-count">0</span> comments
+                        </div>
+                        <div id="modal-post-date" class="post-date"></div>
+                    </div>
+                    <div class="post-comments-container">
+                        <h4>Comments</h4>
+                        <div id="modal-comments" class="comments-list"></div>
+                    </div>
+                    <div class="add-comment-container">
+                        <textarea id="comment-input" placeholder="Add a comment..."></textarea>
+                        <button id="post-comment-btn" class="comment-btn" disabled>Post</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
     
+    <!-- Like button functionality -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add click event to all post cards
+            // Post modal variables
+            const postModal = document.getElementById('post-modal');
+            const modalClose = document.querySelector('.close-modal');
+            const modalImage = document.getElementById('modal-post-image');
+            const modalUsername = document.getElementById('modal-username');
+            const modalUserAvatar = document.getElementById('modal-user-avatar');
+            const modalTimestamp = document.getElementById('modal-post-timestamp');
+            const modalDescription = document.getElementById('modal-description');
+            const modalLikes = document.getElementById('modal-likes');
+            const modalLikeIcon = document.getElementById('modal-like-icon');
+            const modalCommentsCount = document.getElementById('modal-comments-count');
+            const modalDate = document.getElementById('modal-post-date');
+            const modalComments = document.getElementById('modal-comments');
+            const commentInput = document.getElementById('comment-input');
+            const postCommentBtn = document.getElementById('post-comment-btn');
+            let currentPostId = null;
+            
+            // Add click event to all post cards and comment buttons
             document.querySelectorAll('.post-card').forEach(postCard => {
-                // Get post elements
                 const postImage = postCard.querySelector('.post-card-image');
                 const commentBtn = postCard.querySelector('.post-comment-btn');
-                const likeBtn = postCard.querySelector('.post-like-btn');
                 const viewCommentsText = postCard.querySelector('.post-card-comments');
-
-                // Like button functionality
-                if (likeBtn) {
-                    likeBtn.addEventListener('click', async function() {
-                        const postId = postCard.getAttribute('data-post-id');
-                        const likeIcon = likeBtn.querySelector('i');
-                        const likesCountElement = postCard.querySelector('.post-likes-count');
-                        const currentLikes = parseInt(likesCountElement.textContent);
-                        
-                        // Get current user data
-                        const userData = {
-                            uid: '{{ user_data.uid }}',
-                            username: '{{ user_data.username }}'
-                        };
-                        
-                        try {
-                            if (likeIcon.classList.contains('fas')) {
-                                // Unlike post
-                                const db = firebase.firestore();
-                                const postRef = db.collection('Posts').doc(postId);
-                                const userLikeRef = postRef.collection('Likes').doc(userData.uid);
-                                
-                                await db.runTransaction(async (transaction) => {
-                                    // Delete like document
-                                    transaction.delete(userLikeRef);
-                                    
-                                    // Update post likes count
-                                    transaction.update(postRef, { 
-                                        likes: firebase.firestore.FieldValue.increment(-1) 
-                                    });
-                                });
-                                
-                                // Update UI
-                                likeIcon.classList.replace('fas', 'far');
-                                likeIcon.style.color = '';
-                                likesCountElement.textContent = Math.max(0, currentLikes - 1);
-                            } else {
-                                // Like post
-                                const db = firebase.firestore();
-                                const postRef = db.collection('Posts').doc(postId);
-                                const userLikeRef = postRef.collection('Likes').doc(userData.uid);
-                                
-                                await db.runTransaction(async (transaction) => {
-                                    // Create like document
-                                    transaction.set(userLikeRef, {
-                                        userId: userData.uid,
-                                        username: userData.username,
-                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                    });
-                                    
-                                    // Update post likes count
-                                    transaction.update(postRef, { 
-                                        likes: firebase.firestore.FieldValue.increment(1) 
-                                    });
-                                });
-                                
-                                // Update UI
-                                likeIcon.classList.replace('far', 'fas');
-                                likeIcon.style.color = '#e74c3c';
-                                likesCountElement.textContent = currentLikes + 1;
-                                
-                                // Add like animation
-                                const likeAnim = document.createElement('div');
-                                likeAnim.className = 'like-animation';
-                                likeBtn.appendChild(likeAnim);
-                                setTimeout(() => likeAnim.remove(), 700);
-                            }
-                        } catch (error) {
-                            console.error('Error toggling like:', error);
-                        }
+                
+                // Show modal when clicking on post image
+                if (postImage) {
+                    postImage.addEventListener('click', function() {
+                        openPostModal(postCard);
+                    });
+                }
+                
+                // Show modal when clicking on comment button
+                if (commentBtn) {
+                    commentBtn.addEventListener('click', function() {
+                        openPostModal(postCard);
+                    });
+                }
+                
+                // Show modal when clicking on "View all comments"
+                if (viewCommentsText) {
+                    viewCommentsText.addEventListener('click', function() {
+                        openPostModal(postCard);
                     });
                 }
             });
             
-            // Check if posts have been liked by the current user
-            async function checkLikedPosts() {
+            // Close modal when clicking on close button
+            if (modalClose) {
+                modalClose.addEventListener('click', function() {
+                    postModal.classList.remove('show');
+                    setTimeout(() => {
+                        postModal.style.display = 'none';
+                    }, 300);
+                    document.body.style.overflow = '';
+                });
+            }
+            
+            // Handle escape key to close modal
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && postModal.classList.contains('show')) {
+                    postModal.classList.remove('show');
+                    setTimeout(() => {
+                        postModal.style.display = 'none';
+                    }, 300);
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // Enable/disable comment button based on input
+            if (commentInput) {
+                commentInput.addEventListener('input', function() {
+                    postCommentBtn.disabled = !this.value.trim();
+                });
+            }
+            
+            // Post a comment
+            if (postCommentBtn) {
+                postCommentBtn.addEventListener('click', async function() {
+                    if (!currentPostId || !commentInput.value.trim()) return;
+                    
+                    try {
+                        const commentText = commentInput.value.trim();
+                        const userData = {
+                            uid: '{{ user_data.uid }}',
+                            username: '{{ user_data.username }}',
+                            photoURL: '{{ user_data.photoURL }}'
+                        };
+                        
+                        const db = firebase.firestore();
+                        const postRef = db.collection('Posts').doc(currentPostId);
+                        const commentRef = postRef.collection('Comments').doc();
+                        
+                        await db.runTransaction(async (transaction) => {
+                            // Create comment document
+                            transaction.set(commentRef, {
+                                userId: userData.uid,
+                                username: userData.username,
+                                photoURL: userData.photoURL,
+                                text: commentText,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            // Update post comments count
+                            transaction.update(postRef, { 
+                                comments: firebase.firestore.FieldValue.increment(1) 
+                            });
+                        });
+                        
+                        // Update UI - add new comment to modal
+                        const newComment = createCommentElement(userData.username, commentText, userData.photoURL, 'Just now');
+                        modalComments.appendChild(newComment);
+                        modalComments.scrollTop = modalComments.scrollHeight;
+                        
+                        // Update comments count in modal
+                        const currentCount = parseInt(modalCommentsCount.textContent);
+                        modalCommentsCount.textContent = currentCount + 1;
+                        
+                        // Update comments count in feed post
+                        const feedPost = document.querySelector(`.post-card[data-post-id="${currentPostId}"]`);
+                        const feedCommentsCount = feedPost.querySelector('.post-comments-count');
+                        feedCommentsCount.textContent = parseInt(feedCommentsCount.textContent) + 1;
+                        
+                        // Clear input
+                        commentInput.value = '';
+                        postCommentBtn.disabled = true;
+                    } catch (error) {
+                        console.error('Error posting comment:', error);
+                    }
+                });
+            }
+            
+            // Function to open the post modal
+            function openPostModal(postCard) {
+                const postId = postCard.getAttribute('data-post-id');
+                const image = postCard.querySelector('.post-card-image img').src;
+                const username = postCard.querySelector('.post-card-username').textContent;
+                const userAvatar = postCard.querySelector('.post-card-user-avatar img');
+                const description = postCard.querySelector('.post-card-caption').textContent;
+                const likes = postCard.querySelector('.post-likes-count').textContent;
+                const commentsCount = postCard.querySelector('.post-comments-count').textContent;
+                const timestamp = postCard.querySelector('.post-card-timestamp');
+                
+                // Set modal content
+                modalImage.src = image;
+                modalUsername.textContent = username;
+                modalUserAvatar.src = userAvatar ? userAvatar.src : '/static/images/default-avatar.png';
+                modalUserAvatar.alt = username;
+                modalDescription.textContent = description;
+                modalLikes.textContent = likes;
+                modalCommentsCount.textContent = commentsCount;
+                modalDate.textContent = timestamp ? timestamp.textContent : '';
+                
+                // Check if the post is liked by the current user
+                const likeIcon = postCard.querySelector('.post-like-btn i');
+                if (likeIcon && likeIcon.classList.contains('fas')) {
+                    modalLikeIcon.className = 'fas fa-heart';
+                    modalLikeIcon.style.color = '#e74c3c';
+                } else {
+                    modalLikeIcon.className = 'far fa-heart';
+                    modalLikeIcon.style.color = '';
+                }
+                
+                // Set current post ID
+                currentPostId = postId;
+                
+                // Clear previous comments
+                modalComments.innerHTML = '';
+                
+                // Load comments
+                loadComments(postId);
+                
+                // Show modal
+                postModal.style.display = 'flex';
+                setTimeout(() => {
+                    postModal.classList.add('show');
+                }, 10);
+                
+                // Prevent scrolling on body
+                document.body.style.overflow = 'hidden';
+            }
+            
+            // Function to load comments for a post
+            async function loadComments(postId) {
                 try {
                     const db = firebase.firestore();
-                    const userId = '{{ user_data.uid }}';
+                    const commentsRef = db.collection('Posts')
+                        .doc(postId)
+                        .collection('Comments')
+                        .orderBy('createdAt', 'asc');
                     
-                    document.querySelectorAll('.post-card').forEach(async (postCard) => {
-                        const postId = postCard.getAttribute('data-post-id');
-                        const likeBtn = postCard.querySelector('.post-like-btn');
-                        
-                        if (postId && likeBtn) {
-                            const likeRef = await db.collection('Posts')
-                                .doc(postId)
-                                .collection('Likes')
-                                .doc(userId)
-                                .get();
-                                
-                            if (likeRef.exists) {
-                                // User has liked this post
-                                const likeIcon = likeBtn.querySelector('i');
-                                likeIcon.classList.replace('far', 'fas');
-                                likeIcon.style.color = '#e74c3c';
-                            }
-                        }
+                    const snapshot = await commentsRef.get();
+                    
+                    if (snapshot.empty) {
+                        modalComments.innerHTML = '<div class="no-comments">No comments yet. Be the first to comment!</div>';
+                        return;
+                    }
+                    
+                    snapshot.forEach(doc => {
+                        const commentData = doc.data();
+                        const timestamp = commentData.createdAt ? formatTimestamp(commentData.createdAt.toDate()) : 'Just now';
+                        const comment = createCommentElement(commentData.username, commentData.text, commentData.photoURL, timestamp);
+                        modalComments.appendChild(comment);
                     });
+                    
+                    // Scroll to the bottom of the comments
+                    modalComments.scrollTop = modalComments.scrollHeight;
                 } catch (error) {
-                    console.error('Error checking liked posts:', error);
+                    console.error('Error loading comments:', error);
+                    modalComments.innerHTML = '<div class="no-comments error">Failed to load comments. Please try again.</div>';
                 }
             }
             
-            // Run the check on page load
-            if (firebase && firebase.firestore) {
-                checkLikedPosts();
+            // Function to create a comment element
+            function createCommentElement(username, text, photoURL, timestamp) {
+                const commentItem = document.createElement('div');
+                commentItem.className = 'comment-item';
+                
+                commentItem.innerHTML = `
+                    <div class="comment-user-avatar">
+                        <img src="${photoURL || '/static/images/default-avatar.png'}" alt="${username}">
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-username">${username}</span>
+                            <span class="comment-timestamp">${timestamp}</span>
+                        </div>
+                        <div class="comment-text">${text}</div>
+                    </div>
+                `;
+                
+                return commentItem;
+            }
+            
+            // Function to format timestamp
+            function formatTimestamp(date) {
+                const now = new Date();
+                const diff = (now - date) / 1000; // diff in seconds
+                
+                if (diff < 60) {
+                    return 'Just now';
+                } else if (diff < 3600) {
+                    const minutes = Math.floor(diff / 60);
+                    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+                } else if (diff < 86400) {
+                    const hours = Math.floor(diff / 3600);
+                    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                } else if (diff < 604800) {
+                    const days = Math.floor(diff / 86400);
+                    return `${days} day${days > 1 ? 's' : ''} ago`;
+                } else {
+                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                    return date.toLocaleDateString(undefined, options);
+                }
             }
         });
+        
+        document.querySelectorAll('.post-card').forEach(postCard => {
+            const likeBtn = postCard.querySelector('.post-like-btn');
+            // Like button functionality
+            if (likeBtn) {
+                likeBtn.addEventListener('click', async function() {
+                    const postId = postCard.getAttribute('data-post-id');
+                    const likeIcon = likeBtn.querySelector('i');
+                    const likesCountElement = postCard.querySelector('.post-likes-count');
+                    const currentLikes = parseInt(likesCountElement.textContent);
+                    
+                    // Get current user data
+                    const userData = {
+                        uid: '{{ user_data.uid }}',
+                        username: '{{ user_data.username }}'
+                    };
+                    
+                    try {
+                        if (likeIcon.classList.contains('fas')) {
+                            // Unlike post
+                            const db = firebase.firestore();
+                            const postRef = db.collection('Posts').doc(postId);
+                            const userLikeRef = postRef.collection('Likes').doc(userData.uid);
+                            
+                            await db.runTransaction(async (transaction) => {
+                                // Delete like document
+                                transaction.delete(userLikeRef);
+                                
+                                // Update post likes count
+                                transaction.update(postRef, { 
+                                    likes: firebase.firestore.FieldValue.increment(-1) 
+                                });
+                            });
+                            
+                            // Update UI
+                            likeIcon.classList.replace('fas', 'far');
+                            likeIcon.style.color = '';
+                            likesCountElement.textContent = Math.max(0, currentLikes - 1);
+                        } else {
+                            // Like post
+                            const db = firebase.firestore();
+                            const postRef = db.collection('Posts').doc(postId);
+                            const userLikeRef = postRef.collection('Likes').doc(userData.uid);
+                            
+                            await db.runTransaction(async (transaction) => {
+                                // Create like document
+                                transaction.set(userLikeRef, {
+                                    userId: userData.uid,
+                                    username: userData.username,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                                
+                                // Update post likes count
+                                transaction.update(postRef, { 
+                                    likes: firebase.firestore.FieldValue.increment(1) 
+                                });
+                            });
+                            
+                            // Update UI
+                            likeIcon.classList.replace('far', 'fas');
+                            likeIcon.style.color = '#e74c3c';
+                            likesCountElement.textContent = currentLikes + 1;
+                            
+                            // Add like animation
+                            const likeAnim = document.createElement('div');
+                            likeAnim.className = 'like-animation';
+                            likeBtn.appendChild(likeAnim);
+                            setTimeout(() => likeAnim.remove(), 700);
+                        }
+                    } catch (error) {
+                        console.error('Error toggling like:', error);
+                    }
+                });
+            }
+        });
+        
+        // Check if posts have been liked by the current user
+        async function checkLikedPosts() {
+            try {
+                const db = firebase.firestore();
+                const userId = '{{ user_data.uid }}';
+                
+                document.querySelectorAll('.post-card').forEach(async (postCard) => {
+                    const postId = postCard.getAttribute('data-post-id');
+                    const likeBtn = postCard.querySelector('.post-like-btn');
+                    
+                    if (postId && likeBtn) {
+                        const likeRef = await db.collection('Posts')
+                            .doc(postId)
+                            .collection('Likes')
+                            .doc(userId)
+                            .get();
+                            
+                        if (likeRef.exists) {
+                            // User has liked this post
+                            const likeIcon = likeBtn.querySelector('i');
+                            likeIcon.classList.replace('far', 'fas');
+                            likeIcon.style.color = '#e74c3c';
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error checking liked posts:', error);
+            }
+        }
+        
+        // Run the check on page load
+        if (firebase && firebase.firestore) {
+            checkLikedPosts();
+        }
     </script>
 </body>
 </html>
