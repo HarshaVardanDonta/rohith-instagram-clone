@@ -128,8 +128,24 @@
                                 <span class="post-username">{{ post.username }}</span> {{ post.description }}
                             </div>
                             
+                            {% if post.top_comments and post.top_comments|length > 0 %}
+                                <div class="post-card-comments-list">
+                                    {% for comment in post.top_comments[:5] %}
+                                        <div class="timeline-comment">
+                                            <span class="comment-username">{{ comment.username }}</span> {{ comment.text }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
                             <div class="post-card-comments">
-                                View all <span class="post-comments-count">{{ post.comments }}</span> comments
+                                {% if post.comments > 5 %}
+                                    View all <span class="post-comments-count">{{ post.comments }}</span> comments
+                                {% elif post.comments > 0 %}
+                                    <span class="post-comments-count">{{ post.comments }}</span> comments
+                                {% else %}
+                                    No comments yet
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
@@ -184,8 +200,9 @@
                         <div id="modal-comments" class="comments-list"></div>
                     </div>
                     <div class="add-comment-container">
-                        <textarea id="comment-input" placeholder="Add a comment..."></textarea>
+                        <textarea id="comment-input" placeholder="Add a comment..." maxlength="200"></textarea>
                         <button id="post-comment-btn" class="comment-btn" disabled>Post</button>
+                        <span id="comment-counter" class="character-count">0/200</span>
                     </div>
                 </div>
             </div>
@@ -193,6 +210,7 @@
     </div>
     
     <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/search.js') }}"></script>
     
     <!-- Like button functionality -->
     <script>

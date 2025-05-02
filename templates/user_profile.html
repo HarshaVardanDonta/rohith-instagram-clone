@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Social</title>
+    <title>{{ profile_user.displayName }} - Social</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/universal.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
                                 <div class="user-dropdown-email">{{ user_data.email }}</div>
                             </div>
                             <ul class="user-dropdown-links">
-                                <li><a href="/profile" class="active">
+                                <li><a href="/profile">
                                     <div class="menu-item-content">
                                         <i class="fas fa-user"></i>
                                         <span class="menu-item-text">Profile</span>
@@ -75,8 +75,8 @@
             
             <div class="profile-header">
                 <div class="profile-image">
-                    {% if user_data.photoURL %}
-                    <img src="{{ user_data.photoURL }}" alt="{{ user_data.displayName }}">
+                    {% if profile_user.photoURL %}
+                    <img src="{{ profile_user.photoURL }}" alt="{{ profile_user.displayName }}">
                     {% else %}
                     <div class="profile-placeholder">
                         <i class="fas fa-user"></i>
@@ -84,15 +84,21 @@
                     {% endif %}
                 </div>
                 <div class="profile-info">
-                    <h1>{{ user_data.username }}</h1>
+                    <h1>{{ profile_user.username }}</h1>
                     <div class="profile-stats">
-                        <div class="stat">{{ user_data.post_count }} posts</div>
-                        <div class="stat"><a href="/followers/{{ user_data.uid }}" class="stat-link">0 followers</a></div>
-                        <div class="stat"><a href="/following/{{ user_data.uid }}" class="stat-link">0 following</a></div>
+                        <div class="stat">{{ profile_user.post_count }} posts</div>
+                        <div class="stat"><a href="/followers/{{ profile_user.uid }}" class="stat-link">{{ profile_user.followers_count }} followers</a></div>
+                        <div class="stat"><a href="/following/{{ profile_user.uid }}" class="stat-link">{{ profile_user.following_count }} following</a></div>
                     </div>
-                    <div class="profile-fullname">{{ user_data.displayName }}</div>
+                    <div class="profile-fullname">{{ profile_user.displayName }}</div>
                     <div class="profile-actions">
-                        <a href="/edit-profile" class="edit-profile-btn">Edit Profile</a>
+                        {% if user_data.uid != profile_user.uid %}
+                            <button id="follow-btn" class="follow-btn {% if is_following %}following{% endif %}" data-user-id="{{ profile_user.uid }}">
+                                {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                            </button>
+                        {% else %}
+                            <a href="/edit-profile" class="edit-profile-btn">Edit Profile</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -135,12 +141,97 @@
     </main>
 
     <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
-    <!-- Add search.js to enable profile search functionality -->
     <script src="{{ url_for('static', path='/js/search.js') }}"></script>
     
-    <!-- Post click handler script -->
+    <!-- Follow/Unfollow and post modal functionality -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Follow/Unfollow button functionality
+            const followBtn = document.getElementById('follow-btn');
+            if (followBtn) {
+                followBtn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    const isFollowing = this.classList.contains('following');
+                    
+                    // Disable button during API call to prevent multiple clicks
+                    followBtn.disabled = true;
+                    
+                    if (isFollowing) {
+                        // Unfollow the user
+                        fetch(`/unfollow/${userId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update UI
+                                followBtn.textContent = 'Follow';
+                                followBtn.classList.remove('following');
+                                
+                                // Update follower count
+                                const followerCountElement = document.querySelector('a[href="/followers/{{ profile_user.uid }}"]');
+                                if (followerCountElement) {
+                                    const currentCount = parseInt(followerCountElement.textContent);
+                                    if (!isNaN(currentCount)) {
+                                        followerCountElement.textContent = `${Math.max(0, currentCount - 1)} followers`;
+                                    }
+                                }
+                            } else {
+                                console.error('Failed to unfollow:', data.message);
+                                alert('Failed to unfollow user: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error unfollowing user:', error);
+                            alert('An error occurred. Please try again.');
+                        })
+                        .finally(() => {
+                            followBtn.disabled = false;
+                        });
+                    } else {
+                        // Follow the user
+                        fetch(`/follow/${userId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update UI
+                                followBtn.textContent = 'Unfollow';
+                                followBtn.classList.add('following');
+                                
+                                // Update follower count
+                                const followerCountElement = document.querySelector('a[href="/followers/{{ profile_user.uid }}"]');
+                                if (followerCountElement) {
+                                    const currentText = followerCountElement.textContent;
+                                    const currentCount = parseInt(currentText);
+                                    if (!isNaN(currentCount)) {
+                                        followerCountElement.textContent = `${currentCount + 1} followers`;
+                                    }
+                                }
+                            } else {
+                                console.error('Failed to follow:', data.message);
+                                alert('Failed to follow user: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error following user:', error);
+                            alert('An error occurred. Please try again.');
+                        })
+                        .finally(() => {
+                            followBtn.disabled = false;
+                        });
+                    }
+                });
+            }
+            
+            // Modal elements handler continues here
             // Modal elements
             const postModal = document.getElementById('post-modal');
             const closeModal = document.querySelector('.close-modal');
@@ -536,9 +627,8 @@
                         <div id="modal-comments" class="comments-list"></div>
                     </div>
                     <div class="add-comment-container">
-                        <textarea id="comment-input" placeholder="Add a comment..." maxlength="200"></textarea>
+                        <textarea id="comment-input" placeholder="Add a comment..."></textarea>
                         <button id="post-comment-btn" class="comment-btn">Post</button>
-                        <span id="comment-counter" class="character-count">0/200</span>
                     </div>
                 </div>
             </div>

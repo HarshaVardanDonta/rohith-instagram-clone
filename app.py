@@ -378,24 +378,55 @@ async def login(
 
 @app.get("/home", response_class=HTMLResponse)
 async def home(request: Request):
-    """Render home page with feed posts"""
+    """Render home page with feed posts from user and followed accounts"""
     # User data is now available in request.state
     user_id = request.state.user.uid
     
     try:
-        # Fetch recent posts for the feed, ordered by creation time (most recent first)
-        # In a real app, you'd fetch posts from users that the current user follows
-        # For demo purposes, we'll just get the most recent posts from all users
-        posts_ref = db.collection('Posts').order_by('createdAt', direction=firestore.Query.DESCENDING).limit(10)
         feed_posts = []
         
-        # Get the posts and format them for the template
-        for post in posts_ref.stream():
-            post_data = post.to_dict()
-            # Add post ID if not present in the data
-            if 'postId' not in post_data:
-                post_data['postId'] = post.id
-            feed_posts.append(post_data)
+        # Get list of users the current user follows
+        following_ref = db.collection('Users').document(user_id).collection('Following')
+        following_users = [user_id]  # Start with current user's ID
+        
+        # Add followed users to the list
+        for follow_doc in following_ref.stream():
+            follow_data = follow_doc.to_dict()
+            if 'userId' in follow_data:
+                following_users.append(follow_data['userId'])
+        
+        # For each user (including current user), get their posts
+        for followed_user_id in following_users:
+            # Get posts from this user
+            user_posts_ref = db.collection('Posts').where('userId', '==', followed_user_id).order_by('createdAt', direction=firestore.Query.DESCENDING)
+            
+            for post in user_posts_ref.stream():
+                post_data = post.to_dict()
+                # Add post ID if not present in the data
+                if 'postId' not in post_data:
+                    post_data['postId'] = post.id
+                
+                # Fetch top 5 comments for this post
+                try:
+                    comments_ref = db.collection('Posts').document(post_data['postId']).collection('Comments').order_by('createdAt', direction=firestore.Query.DESCENDING).limit(5)
+                    comments = []
+                    for comment_doc in comments_ref.stream():
+                        comment_data = comment_doc.to_dict()
+                        comments.append(comment_data)
+                    
+                    # Add the comments to the post data
+                    post_data['top_comments'] = comments
+                except Exception as e:
+                    print(f"Error fetching comments for post {post_data['postId']}: {str(e)}")
+                    post_data['top_comments'] = []
+                
+                feed_posts.append(post_data)
+        
+        # Sort all collected posts by creation time (most recent first)
+        feed_posts.sort(key=lambda x: x.get('createdAt', 0), reverse=True)
+        
+        # Limit to 50 posts
+        feed_posts = feed_posts[:50]
             
         return templates.TemplateResponse("home.html", {
             "request": request, 
@@ -759,6 +790,274 @@ async def create_post(
                 "error": f"Failed to create post: {str(e)}"
             }
         )
+
+@app.get("/followers/{user_id}", response_class=HTMLResponse)
+async def followers_page(request: Request, user_id: str):
+    """Show the list of followers for a user"""
+    try:
+        # Check if the profile user exists
+        try:
+            profile_user = auth.get_user(user_id)
+        except:
+            # If the user doesn't exist, redirect to home
+            return RedirectResponse(url="/home", status_code=status.HTTP_303_SEE_OTHER)
+        
+        # Get the followers from Firestore
+        followers_ref = db.collection('Users').document(user_id).collection('Followers')
+        followers_query = followers_ref.order_by('createdAt', direction=firestore.Query.DESCENDING)
+        
+        # Fetch all followers and their data
+        followers = []
+        for doc in followers_query.stream():
+            follower_data = doc.to_dict()
+            if 'userId' in follower_data:
+                # Get the follower's user data
+                follower_user_doc = db.collection('Users').document(follower_data['userId']).get()
+                if follower_user_doc.exists:
+                    follower_user = follower_user_doc.to_dict()
+                    followers.append({
+                        'uid': follower_data['userId'],
+                        'username': follower_user.get('username', ''),
+                        'displayName': follower_user.get('displayName', ''),
+                        'photoURL': follower_user.get('photoURL', None)
+                    })
+        
+        return templates.TemplateResponse("followers.html", {
+            "request": request,
+            "user_data": request.state.user_data,
+            "profile_user_id": user_id,
+            "followers": followers
+        })
+        
+    except Exception as e:
+        print(f"Error fetching followers: {e}")
+        return templates.TemplateResponse("followers.html", {
+            "request": request,
+            "user_data": request.state.user_data,
+            "profile_user_id": user_id,
+            "followers": []
+        })
+
+@app.get("/following/{user_id}", response_class=HTMLResponse)
+async def following_page(request: Request, user_id: str):
+    """Show the list of users that a user is following"""
+    try:
+        # Check if the profile user exists
+        try:
+            profile_user = auth.get_user(user_id)
+        except:
+            # If the user doesn't exist, redirect to home
+            return RedirectResponse(url="/home", status_code=status.HTTP_303_SEE_OTHER)
+        
+        # Get the following users from Firestore
+        following_ref = db.collection('Users').document(user_id).collection('Following')
+        following_query = following_ref.order_by('createdAt', direction=firestore.Query.DESCENDING)
+        
+        # Fetch all following and their data
+        following = []
+        for doc in following_query.stream():
+            following_data = doc.to_dict()
+            if 'userId' in following_data:
+                # Get the followed user's data
+                followed_user_doc = db.collection('Users').document(following_data['userId']).get()
+                if followed_user_doc.exists:
+                    followed_user = followed_user_doc.to_dict()
+                    following.append({
+                        'uid': following_data['userId'],
+                        'username': followed_user.get('username', ''),
+                        'displayName': followed_user.get('displayName', ''),
+                        'photoURL': followed_user.get('photoURL', None)
+                    })
+        
+        return templates.TemplateResponse("following.html", {
+            "request": request,
+            "user_data": request.state.user_data,
+            "profile_user_id": user_id,
+            "following": following
+        })
+        
+    except Exception as e:
+        print(f"Error fetching following: {e}")
+        return templates.TemplateResponse("following.html", {
+            "request": request,
+            "user_data": request.state.user_data,
+            "profile_user_id": user_id,
+            "following": []
+        })
+
+@app.get("/search")
+async def search_users(request: Request, query: str = None):
+    """Search for users by display name"""
+    results = []
+    
+    if query and query.strip():
+        try:
+            # Search for users whose displayName starts with the query (case insensitive)
+            query = query.strip().lower()
+            
+            # Get all users and filter in memory for case-insensitive prefix match
+            # Not ideal for large databases, but works for small to medium user bases
+            users_ref = db.collection('Users').limit(100).stream()
+            
+            for doc in users_ref:
+                user_data = doc.to_dict()
+                display_name = user_data.get('displayName', '').lower()
+                
+                # Check if display name starts with the query
+                if display_name.startswith(query):
+                    results.append({
+                        'uid': user_data.get('uid'),
+                        'username': user_data.get('username'),
+                        'displayName': user_data.get('displayName'),
+                        'photoURL': user_data.get('photoURL')
+                    })
+            
+            # Sort results by displayName
+            results.sort(key=lambda x: x['displayName'].lower())
+            
+        except Exception as e:
+            print(f"Error searching users: {str(e)}")
+    
+    return {"users": results}
+
+@app.get("/profile/{user_id}", response_class=HTMLResponse)
+async def user_profile(request: Request, user_id: str):
+    """View another user's profile"""
+    # Check if the profile user exists
+    try:
+        profile_user = auth.get_user(user_id)
+    except:
+        # If the user doesn't exist, redirect to home
+        return RedirectResponse(url="/home", status_code=status.HTTP_303_SEE_OTHER)
+    
+    try:
+        # Get profile user data
+        profile_user_doc = db.collection('Users').document(user_id).get()
+        if not profile_user_doc.exists:
+            return RedirectResponse(url="/home", status_code=status.HTTP_303_SEE_OTHER)
+        
+        profile_user_data = profile_user_doc.to_dict()
+        
+        # Check if the current user follows this profile
+        current_user_id = request.state.user.uid
+        is_following = False
+        
+        if current_user_id != user_id:  # Don't check if viewing own profile
+            follow_doc = db.collection('Users').document(current_user_id).collection('Following').document(user_id).get()
+            is_following = follow_doc.exists
+        
+        # Fetch user's posts
+        posts_ref = db.collection('Posts').where('userId', '==', user_id).order_by('createdAt', direction=firestore.Query.DESCENDING).limit(30)
+        posts = []
+        
+        for post in posts_ref.stream():
+            post_data = post.to_dict()
+            if 'postId' not in post_data:
+                post_data['postId'] = post.id
+            posts.append(post_data)
+        
+        # Count followers and following
+        followers_count = 0
+        following_count = 0
+        
+        followers_ref = db.collection('Users').document(user_id).collection('Followers')
+        followers_count = len(list(followers_ref.limit(1000).stream()))
+        
+        following_ref = db.collection('Users').document(user_id).collection('Following')
+        following_count = len(list(following_ref.limit(1000).stream()))
+        
+        # Add counts to user data
+        profile_user_data['post_count'] = len(posts)
+        profile_user_data['followers_count'] = followers_count
+        profile_user_data['following_count'] = following_count
+        
+        # Render profile page
+        return templates.TemplateResponse(
+            "user_profile.html", 
+            {
+                "request": request,
+                "user_data": request.state.user_data,  # Current logged-in user data
+                "profile_user": profile_user_data,     # Profile being viewed
+                "is_following": is_following,
+                "posts": posts
+            }
+        )
+    except Exception as e:
+        print(f"Error viewing user profile: {str(e)}")
+        # If there's an error, redirect to home
+        return RedirectResponse(url="/home?error=Could not load profile", status_code=status.HTTP_303_SEE_OTHER)
+
+@app.post("/follow/{user_id}")
+async def follow_user(request: Request, user_id: str):
+    """Follow a user"""
+    current_user_id = request.state.user.uid
+    
+    # Don't allow following yourself
+    if current_user_id == user_id:
+        return {"success": False, "message": "You cannot follow yourself"}
+    
+    try:
+        # Check if the target user exists
+        try:
+            target_user = auth.get_user(user_id)
+        except:
+            return {"success": False, "message": "User not found"}
+        
+        # Check if already following
+        follow_doc = db.collection('Users').document(current_user_id).collection('Following').document(user_id).get()
+        if follow_doc.exists:
+            return {"success": False, "message": "Already following this user"}
+        
+        # Get current user data for the follower record
+        current_user_data = request.state.user_data
+        
+        # Create following record in current user's document
+        db.collection('Users').document(current_user_id).collection('Following').document(user_id).set({
+            'userId': user_id,
+            'createdAt': firestore.SERVER_TIMESTAMP
+        })
+        
+        # Create follower record in target user's document
+        db.collection('Users').document(user_id).collection('Followers').document(current_user_id).set({
+            'userId': current_user_id,
+            'username': current_user_data.get('username', ''),
+            'displayName': current_user_data.get('displayName', ''),
+            'photoURL': current_user_data.get('photoURL', None),
+            'createdAt': firestore.SERVER_TIMESTAMP
+        })
+        
+        return {"success": True, "message": "Successfully followed user"}
+        
+    except Exception as e:
+        print(f"Error following user: {e}")
+        return {"success": False, "message": f"An error occurred: {str(e)}"}
+
+@app.post("/unfollow/{user_id}")
+async def unfollow_user(request: Request, user_id: str):
+    """Unfollow a user"""
+    current_user_id = request.state.user.uid
+    
+    # Don't allow unfollowing yourself
+    if current_user_id == user_id:
+        return {"success": False, "message": "You cannot unfollow yourself"}
+    
+    try:
+        # Check if actually following the user
+        follow_doc = db.collection('Users').document(current_user_id).collection('Following').document(user_id).get()
+        if not follow_doc.exists:
+            return {"success": False, "message": "You are not following this user"}
+        
+        # Remove from current user's following collection
+        db.collection('Users').document(current_user_id).collection('Following').document(user_id).delete()
+        
+        # Remove from target user's followers collection
+        db.collection('Users').document(user_id).collection('Followers').document(current_user_id).delete()
+        
+        return {"success": True, "message": "Successfully unfollowed user"}
+        
+    except Exception as e:
+        print(f"Error unfollowing user: {e}")
+        return {"success": False, "message": f"An error occurred: {str(e)}"}
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)

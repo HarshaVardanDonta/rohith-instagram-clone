@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Followers - Social</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/universal.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Custom Firebase initialization -->
+    <script src="{{ url_for('static', path='/js/firebase-init.js') }}"></script>
+</head>
+<body class="is-authenticated">
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <h1>Social</h1>
+            </div>
+            <div class="search">
+                <input type="text" placeholder="Search">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/home"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="/messages"><i class="fas fa-inbox"></i> Messages</a></li>
+                    <li><a href="/create"><i class="fas fa-plus-square"></i> Create</a></li>
+                    <li class="user-menu">
+                        <div class="user-avatar">
+                            {% if user_data.photoURL %}
+                            <img src="{{ user_data.photoURL }}" alt="{{ user_data.displayName }}">
+                            {% else %}
+                            <i class="fas fa-user"></i>
+                            {% endif %}
+                        </div>
+                        <div class="user-dropdown">
+                            <div class="user-dropdown-header">
+                                <div class="user-dropdown-name">{{ user_data.displayName }}</div>
+                                <div class="user-dropdown-email">{{ user_data.email }}</div>
+                            </div>
+                            <ul class="user-dropdown-links">
+                                <li><a href="/profile">
+                                    <div class="menu-item-content">
+                                        <i class="fas fa-user"></i>
+                                        <span class="menu-item-text">Profile</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right right-icon"></i>
+                                </a></li>
+                                <li><a href="/logout" class="logout-link">
+                                    <div class="menu-item-content">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span class="menu-item-text">Logout</span>
+                                    </div>
+                                </a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="content-box">
+                <div class="user-list-header">
+                    <h1>Followers</h1>
+                    <a href="/profile/{{ profile_user_id }}" class="back-button">
+                        <i class="fas fa-arrow-left"></i> Back to Profile
+                    </a>
+                </div>
+                
+                <div class="user-list">
+                    {% if followers and followers|length > 0 %}
+                        {% for follower in followers %}
+                            <div class="user-list-item">
+                                <div class="user-list-avatar">
+                                    {% if follower.photoURL %}
+                                    <img src="{{ follower.photoURL }}" alt="{{ follower.displayName }}">
+                                    {% else %}
+                                    <div class="avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="user-list-info">
+                                    <div class="user-list-name">{{ follower.displayName }}</div>
+                                    <div class="user-list-username">@{{ follower.username }}</div>
+                                </div>
+                                
+                                {% if follower.uid != user_data.uid %}
+                                <div class="user-list-action">
+                                    <button class="follow-btn" data-user-id="{{ follower.uid }}">Follow</button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-users-message">
+                            <i class="far fa-user-circle"></i>
+                            <p>No followers yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Follow button functionality
+            const followButtons = document.querySelectorAll('.follow-btn');
+            followButtons.forEach(button => {
+                // Check if already following
+                const userId = button.getAttribute('data-user-id');
+                const currentUserId = '{{ user_data.uid }}';
+                
+                checkFollowingStatus(userId, currentUserId, button);
+                
+                // Add click event listener
+                button.addEventListener('click', function() {
+                    toggleFollow(userId, currentUserId, button);
+                });
+            });
+            
+            // Function to check if user is already following
+            function checkFollowingStatus(userId, currentUserId, buttonElement) {
+                firebase.firestore().collection('Users')
+                    .doc(currentUserId)
+                    .collection('Following')
+                    .doc(userId)
+                    .get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            // User is following
+                            buttonElement.textContent = 'Unfollow';
+                            buttonElement.classList.add('following');
+                        } else {
+                            // User is not following
+                            buttonElement.textContent = 'Follow';
+                            buttonElement.classList.remove('following');
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error checking follow status:", error);
+                    });
+            }
+            
+            // Function to toggle follow/unfollow
+            function toggleFollow(userId, currentUserId, buttonElement) {
+                const isFollowing = buttonElement.classList.contains('following');
+                const db = firebase.firestore();
+                const batch = db.batch();
+                
+                const followingRef = db.collection('Users').doc(currentUserId).collection('Following').doc(userId);
+                const followerRef = db.collection('Users').doc(userId).collection('Followers').doc(currentUserId);
+                
+                if (isFollowing) {
+                    // Unfollow the user
+                    batch.delete(followingRef);
+                    batch.delete(followerRef);
+                    
+                    batch.commit()
+                        .then(() => {
+                            buttonElement.textContent = 'Follow';
+                            buttonElement.classList.remove('following');
+                        })
+                        .catch(error => {
+                            console.error("Error unfollowing user:", error);
+                        });
+                } else {
+                    // Follow the user
+                    const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                    
+                    batch.set(followingRef, {
+                        userId: userId,
+                        createdAt: timestamp
+                    });
+                    
+                    batch.set(followerRef, {
+                        userId: currentUserId,
+                        createdAt: timestamp
+                    });
+                    
+                    batch.commit()
+                        .then(() => {
+                            buttonElement.textContent = 'Unfollow';
+                            buttonElement.classList.add('following');
+                        })
+                        .catch(error => {
+                            console.error("Error following user:", error);
+                        });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
