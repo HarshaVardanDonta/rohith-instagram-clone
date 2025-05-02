@@ -210,6 +210,47 @@
                         modalPostTimestamp.textContent = postData.createdAt;
                     }
                     
+                    // Fix comment section width
+                    const infoContainer = document.querySelector('.post-info-container');
+                    const commentsContainer = document.querySelector('.post-comments-container');
+                    const commentInput = document.getElementById('comment-input');
+                    const commentCounter = document.getElementById('comment-counter');
+                    
+                    if (infoContainer) {
+                        infoContainer.style.width = '100%';
+                        infoContainer.style.maxWidth = '400px';
+                    }
+                    
+                    if (commentsContainer) {
+                        commentsContainer.style.width = '100%';
+                        commentsContainer.style.maxHeight = '250px';
+                        commentsContainer.style.overflowY = 'auto';
+                    }
+                    
+                    if (commentInput) {
+                        commentInput.style.width = 'calc(100% - 70px)';
+                        
+                        // Add character counter functionality
+                        commentInput.addEventListener('input', function() {
+                            const currentLength = this.value.length;
+                            commentCounter.textContent = `${currentLength}/200`;
+                            
+                            if (currentLength > 0) {
+                                postCommentBtn.disabled = false;
+                            } else {
+                                postCommentBtn.disabled = true;
+                            }
+                        });
+                    }
+                    
+                    if (commentCounter) {
+                        commentCounter.style.position = 'absolute';
+                        commentCounter.style.right = '15px';
+                        commentCounter.style.bottom = '5px';
+                        commentCounter.style.fontSize = '11px';
+                        commentCounter.style.color = '#8E8E8E';
+                    }
+                    
                     // Load comments for this post
                     loadPostComments(postId);
                     
@@ -384,7 +425,7 @@
                 firebase.firestore().collection('Posts')
                     .doc(postId)
                     .collection('Comments')
-                    .orderBy('createdAt', 'desc')
+                    .orderBy('createdAt', 'desc') // Changed from 'desc' to ensure newest comments first
                     .get()
                     .then((querySnapshot) => {
                         if (querySnapshot.empty) {

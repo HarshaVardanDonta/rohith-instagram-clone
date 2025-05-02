@@ -285,6 +285,11 @@
             // Enable/disable comment button based on input
             if (commentInput) {
                 commentInput.addEventListener('input', function() {
+                    const currentLength = this.value.length;
+                    const commentCounter = document.getElementById('comment-counter');
+                    if (commentCounter) {
+                        commentCounter.textContent = `${currentLength}/200`;
+                    }
                     postCommentBtn.disabled = !this.value.trim();
                 });
             }
@@ -382,6 +387,35 @@
                 // Clear previous comments
                 modalComments.innerHTML = '';
                 
+                // Fix comment section width
+                const infoContainer = document.querySelector('.post-info-container');
+                const commentsContainer = document.querySelector('.post-comments-container');
+                const commentInput = document.querySelector('#comment-input');
+                const commentCounter = document.querySelector('#comment-counter');
+                
+                if (infoContainer) {
+                    infoContainer.style.width = '100%';
+                    infoContainer.style.maxWidth = '400px';
+                }
+                
+                if (commentsContainer) {
+                    commentsContainer.style.width = '100%';
+                    commentsContainer.style.maxHeight = '250px';
+                    commentsContainer.style.overflowY = 'auto';
+                }
+                
+                if (commentInput) {
+                    commentInput.style.width = 'calc(100% - 70px)';
+                }
+                
+                if (commentCounter) {
+                    commentCounter.style.position = 'absolute';
+                    commentCounter.style.right = '15px';
+                    commentCounter.style.bottom = '5px';
+                    commentCounter.style.fontSize = '11px';
+                    commentCounter.style.color = '#8E8E8E';
+                }
+                
                 // Load comments
                 loadComments(postId);
                 
@@ -402,7 +436,7 @@
                     const commentsRef = db.collection('Posts')
                         .doc(postId)
                         .collection('Comments')
-                        .orderBy('createdAt', 'asc');
+                        .orderBy('createdAt', 'desc'); // Changed from 'asc' to 'desc' for newest first
                     
                     const snapshot = await commentsRef.get();
                     
@@ -418,8 +452,7 @@
                         modalComments.appendChild(comment);
                     });
                     
-                    // Scroll to the bottom of the comments
-                    modalComments.scrollTop = modalComments.scrollHeight;
+                    // No need to scroll to bottom since newest comments are at the top
                 } catch (error) {
                     console.error('Error loading comments:', error);
                     modalComments.innerHTML = '<div class="no-comments error">Failed to load comments. Please try again.</div>';
