@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Social</title>
+    <title>Join PhotoShare | Create Account</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/universal.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-    <!-- Custom Firebase initialization -->
     <script src="{{ url_for('static', path='/js/firebase-init.js') }}"></script>
 </head>
 <body class="auth-body">
@@ -19,55 +17,55 @@
         <div class="auth-card">
             <div class="auth-header">
                 <div class="logo">
-                    <h1>Social</h1>
+                    <h1>PhotoShare</h1>
                 </div>
-                <p class="auth-subtitle">Create a new account</p>
+                <p class="auth-subtitle">Begin your visual journey</p>
             </div>
 
             {% if error %}
             <div class="alert error">
-                <i class="fas fa-exclamation-circle"></i> {{ error }}
+                <i class="fas fa-triangle-exclamation"></i> {{ error }}
             </div>
             {% endif %}
 
             <form action="/signup" method="post" class="auth-form">
                 <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    <label for="email"><i class="fas fa-at"></i> Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Your email address" required>
                 </div>
                 <div class="form-group">
-                    <label for="full_name"><i class="fas fa-user"></i> Full Name</label>
-                    <input type="text" id="full_name" name="full_name" placeholder="Enter your full name" required>
+                    <label for="full_name"><i class="fas fa-id-card"></i> Full Name</label>
+                    <input type="text" id="full_name" name="full_name" placeholder="Your full name" required>
                 </div>
                 <div class="form-group">
-                    <label for="username"><i class="fas fa-at"></i> Username</label>
-                    <input type="text" id="username" name="username" placeholder="Choose a username" required>
+                    <label for="username"><i class="fas fa-signature"></i> Username</label>
+                    <input type="text" id="username" name="username" placeholder="Select a unique username" required>
                 </div>
                 <div class="form-group password-group">
-                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <label for="password"><i class="fas fa-key"></i> Password</label>
                     <div class="password-input-container">
-                        <input type="password" id="password" name="password" placeholder="Create a password" required>
-                        <span class="password-toggle" onclick="togglePassword()">
+                        <input type="password" id="password" name="password" placeholder="Create a secure password" required>
+                        <span class="password-toggle" onclick="showHidePassword()">
                             <i class="fas fa-eye" id="toggleIcon"></i>
                         </span>
                     </div>
                     <div class="password-strength" id="password-strength">
-                        <span class="strength-label">Password strength:</span>
+                        <span class="strength-label">Security level:</span>
                         <span class="strength-meter">
                             <span class="strength-segment" id="segment1"></span>
                             <span class="strength-segment" id="segment2"></span>
                             <span class="strength-segment" id="segment3"></span>
                         </span>
-                        <span class="strength-text" id="strength-text">Too weak</span>
+                        <span class="strength-text" id="strength-text">Add a password</span>
                     </div>
                 </div>
                 <div class="terms-policy">
                     <input type="checkbox" id="agree" name="agree" required>
-                    <label for="agree">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                    <label for="agree">I accept the <a href="#">Community Guidelines</a> and <a href="#">Data Policy</a></label>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="auth-button">
-                        <i class="fas fa-user-plus"></i> Sign Up
+                        <i class="fas fa-person-circle-plus"></i> Create Account
                     </button>
                 </div>
             </form>
@@ -78,22 +76,22 @@
             
             <div class="social-auth">
                 <button class="social-button google">
-                    <i class="fab fa-google"></i> Sign up with Google
+                    <i class="fab fa-google"></i> Join with Google
                 </button>
             </div>
         </div>
 
         <div class="auth-switch">
-            <p>Already have an account? <a href="/login">Log in</a></p>
+            <p>Already a member? <a href="/login">Sign in here</a></p>
         </div>
         
         <div class="auth-footer">
-            <p>&copy; 2025 Social. All rights reserved.</p>
+            <p>&copy; 2025 PhotoShare. Capturing moments together.</p>
         </div>
     </div>
 
     <script>
-        function togglePassword() {
+        function showHidePassword() {
             const passwordField = document.getElementById('password');
             const toggleIcon = document.getElementById('toggleIcon');
             
@@ -108,7 +106,6 @@
             }
         }
         
-        // Simple password strength checker
         document.getElementById('password').addEventListener('input', function() {
             const password = this.value;
             const strengthText = document.getElementById('strength-text');
@@ -116,36 +113,30 @@
             const segment2 = document.getElementById('segment2');
             const segment3 = document.getElementById('segment3');
             
-            // Reset all segments
             segment1.className = 'strength-segment';
             segment2.className = 'strength-segment';
             segment3.className = 'strength-segment';
             
             if (password.length === 0) {
-                strengthText.textContent = '';
+                strengthText.textContent = 'Add a password';
                 return;
             }
             
-            // Simple strength calculation
-            let strength = 0;
+            let securityScore = 0;
             
-            // Length check
-            if (password.length >= 8) strength += 1;
+            if (password.length >= 8) securityScore += 1;
+            if (/[A-Z]/.test(password) && /[a-z]/.test(password)) securityScore += 1;
+            if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) securityScore += 1;
             
-            // Complexity checks
-            if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength += 1;
-            if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) strength += 1;
-            
-            // Update UI based on strength
-            if (strength === 1) {
-                strengthText.textContent = 'Weak';
+            if (securityScore === 1) {
+                strengthText.textContent = 'Basic';
                 segment1.className = 'strength-segment weak';
-            } else if (strength === 2) {
-                strengthText.textContent = 'Medium';
+            } else if (securityScore === 2) {
+                strengthText.textContent = 'Good';
                 segment1.className = 'strength-segment medium';
                 segment2.className = 'strength-segment medium';
-            } else if (strength === 3) {
-                strengthText.textContent = 'Strong';
+            } else if (securityScore === 3) {
+                strengthText.textContent = 'Excellent';
                 segment1.className = 'strength-segment strong';
                 segment2.className = 'strength-segment strong';
                 segment3.className = 'strength-segment strong';

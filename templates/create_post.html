@@ -3,88 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Post | Instagram Clone</title>
+    <title>Share Moment | PhotoShare</title>
     <link rel="stylesheet" href="/static/css/universal.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <!-- Custom Firebase initialization -->
     <script src="/static/js/firebase-init.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Create New Post</h1>
-        
+        <h1>Share Your Moment</h1>
         
         {% if error %}
         <div class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ error }}
+            <i class="fas fa-exclamation-triangle"></i> {{ error }}
         </div>
         {% endif %}
         
         <form class="create-post-form" action="/create" method="post" enctype="multipart/form-data">
             <div class="preview-container" id="preview-section">
-                <img id="image-preview" src="" alt="Preview" class="hidden">
+                <img id="image-preview" src="" alt="Image Preview" class="hidden">
                 <div id="upload-prompt" class="upload-prompt">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Upload an image for your post</p>
+                    <i class="fas fa-image"></i>
+                    <p>Select an image to share</p>
                 </div>
             </div>
             
             <div class="form-group custom-file-input">
-                <label for="image">Upload Image</label>
+                <label for="image">Image Upload</label>
                 <label for="image" class="file-input-label">
-                    <i class="fas fa-camera"></i> Choose a photo
+                    <i class="fas fa-photo-film"></i> Browse Gallery
                 </label>
-                <input type="file" id="image" name="image" accept="image/*" required onchange="previewImage(event)">
+                <input type="file" id="image" name="image" accept="image/*" required onchange="showImagePreview(event)">
             </div>
             
             <div class="form-group">
                 <label for="description">
-                    <i class="fas fa-pencil-alt"></i> Description
+                    <i class="fas fa-feather"></i> Your Thoughts
                 </label>
-                <textarea id="description" name="description" placeholder="Write a caption for your post..." required></textarea>
+                <textarea id="description" name="description" placeholder="Tell the world about this moment..." required></textarea>
                 <div class="character-count"><span id="char-count">0</span> / 2200</div>
             </div>
             
             <button type="submit" class="submit-btn">
-                <i class="fas fa-paper-plane"></i> Share Post
+                <i class="fas fa-share-alt"></i> Publish Moment
             </button>
         </form>
         
         <div class="navigation-buttons">
             <a href="/home" class="nav-button">
-                <i class="fas fa-arrow-left"></i> Back to Home
+                <i class="fas fa-house"></i> Return to Feed
             </a>
         </div>
     </div>
 
     <script>
-        function previewImage(event) {
-            const reader = new FileReader();
-            const preview = document.getElementById('image-preview');
-            const uploadPrompt = document.getElementById('upload-prompt');
+        function showImagePreview(event) {
+            const fileReader = new FileReader();
+            const previewImage = document.getElementById('image-preview');
+            const uploadBox = document.getElementById('upload-prompt');
             
-            reader.onload = function() {
-                preview.src = reader.result;
-                preview.classList.remove('hidden');
-                uploadPrompt.classList.add('hidden');
+            fileReader.onload = function() {
+                previewImage.src = fileReader.result;
+                previewImage.classList.remove('hidden');
+                uploadBox.classList.add('hidden');
             }
             
-            reader.readAsDataURL(event.target.files[0]);
+            fileReader.readAsDataURL(event.target.files[0]);
         }
         
-        // Count characters in description
         document.getElementById('description').addEventListener('input', function() {
-            const charCount = this.value.length;
-            document.getElementById('char-count').innerText = charCount;
+            const textLength = this.value.length;
+            document.getElementById('char-count').innerText = textLength;
             
-            if (charCount > 2200) {
+            if (textLength > 2200) {
                 document.getElementById('char-count').classList.add('text-danger');
             } else {
                 document.getElementById('char-count').classList.remove('text-danger');

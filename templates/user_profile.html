@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ profile_user.displayName }} - Social</title>
+    <title>{{ profile_user.displayName }} | PhotoShare</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/universal.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -20,22 +20,22 @@
     <header>
         <div class="header-container">
             <div class="logo">
-                <h1>Social</h1>
+                <h1>PhotoShare</h1>
             </div>
             <div class="search">
-                <input type="text" placeholder="Search">
+                <input type="text" placeholder="Discover users and content">
             </div>
             <nav>
                 <ul>
-                    <li><a href="/home"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="/messages"><i class="fas fa-inbox"></i> Messages</a></li>
-                    <li><a href="/create"><i class="fas fa-plus-square"></i> Create</a></li>
+                    <li><a href="/home"><i class="fas fa-images"></i> Gallery</a></li>
+                    <li><a href="/messages"><i class="fas fa-comment-dots"></i> Connect</a></li>
+                    <li><a href="/create"><i class="fas fa-camera-retro"></i> Capture</a></li>
                     <li class="user-menu">
                         <div class="user-avatar">
                             {% if user_data.photoURL %}
                             <img src="{{ user_data.photoURL }}" alt="{{ user_data.displayName }}">
                             {% else %}
-                            <i class="fas fa-user"></i>
+                            <i class="fas fa-user-astronaut"></i>
                             {% endif %}
                         </div>
                         <div class="user-dropdown">
@@ -46,15 +46,15 @@
                             <ul class="user-dropdown-links">
                                 <li><a href="/profile">
                                     <div class="menu-item-content">
-                                        <i class="fas fa-user"></i>
-                                        <span class="menu-item-text">Profile</span>
+                                        <i class="fas fa-user-circle"></i>
+                                        <span class="menu-item-text">My Space</span>
                                     </div>
                                     <i class="fas fa-chevron-right right-icon"></i>
                                 </a></li>
                                 <li><a href="/logout" class="logout-link">
                                     <div class="menu-item-content">
-                                        <i class="fas fa-sign-out-alt"></i>
-                                        <span class="menu-item-text">Logout</span>
+                                        <i class="fas fa-door-open"></i>
+                                        <span class="menu-item-text">Exit App</span>
                                     </div>
                                 </a></li>
                             </ul>
@@ -79,25 +79,25 @@
                     <img src="{{ profile_user.photoURL }}" alt="{{ profile_user.displayName }}">
                     {% else %}
                     <div class="profile-placeholder">
-                        <i class="fas fa-user"></i>
+                        <i class="fas fa-user-astronaut"></i>
                     </div>
                     {% endif %}
                 </div>
                 <div class="profile-info">
                     <h1>{{ profile_user.username }}</h1>
                     <div class="profile-stats">
-                        <div class="stat">{{ profile_user.post_count }} posts</div>
-                        <div class="stat"><a href="/followers/{{ profile_user.uid }}" class="stat-link">{{ profile_user.followers_count }} followers</a></div>
-                        <div class="stat"><a href="/following/{{ profile_user.uid }}" class="stat-link">{{ profile_user.following_count }} following</a></div>
+                        <div class="stat">{{ profile_user.post_count }} moments</div>
+                        <div class="stat"><a href="/followers/{{ profile_user.uid }}" class="stat-link">{{ profile_user.followers_count }} admirers</a></div>
+                        <div class="stat"><a href="/following/{{ profile_user.uid }}" class="stat-link">{{ profile_user.following_count }} inspiring</a></div>
                     </div>
                     <div class="profile-fullname">{{ profile_user.displayName }}</div>
                     <div class="profile-actions">
                         {% if user_data.uid != profile_user.uid %}
                             <button id="follow-btn" class="follow-btn {% if is_following %}following{% endif %}" data-user-id="{{ profile_user.uid }}">
-                                {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                                {% if is_following %}Stop Inspiring{% else %}Find Inspiring{% endif %}
                             </button>
                         {% else %}
-                            <a href="/edit-profile" class="edit-profile-btn">Edit Profile</a>
+                            <a href="/edit-profile" class="edit-profile-btn">Personalize Profile</a>
                         {% endif %}
                     </div>
                 </div>
@@ -105,7 +105,7 @@
 
             <div class="profile-content">
                 <div class="profile-tabs">
-                    <a href="#posts" class="active"><i class="fas fa-th"></i> Posts</a>
+                    <a href="#posts" class="active"><i class="fas fa-grid-2"></i> Collection</a>
                 </div>
                 
                 <div class="profile-posts">
@@ -113,14 +113,14 @@
                         <div class="posts-grid">
                             {% for post in posts %}
                                 <div class="post-item" data-post-id="{{ post.postId }}" data-description="{{ post.description }}">
-                                    <img src="{{ post.imageUrl }}" alt="Post by {{ post.username }}">
+                                    <img src="{{ post.imageUrl }}" alt="Moment by {{ post.username }}">
                                     <div class="post-overlay">
                                         <div class="post-stats">
                                             <div>
                                                 <i class="fas fa-heart"></i> {{ post.likes }}
                                             </div>
                                             <div>
-                                                <i class="fas fa-comment"></i> {{ post.comments }}
+                                                <i class="fas fa-comment-dots"></i> {{ post.comments }}
                                             </div>
                                         </div>
                                         {% if post.createdAt %}
@@ -133,7 +133,7 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <p class="no-posts">No posts yet.</p>
+                        <p class="no-posts">This collection is empty. No moments have been shared yet.</p>
                     {% endif %}
                 </div>
             </div>
@@ -168,7 +168,7 @@
                         .then(data => {
                             if (data.success) {
                                 // Update UI
-                                followBtn.textContent = 'Follow';
+                                followBtn.textContent = 'Find Inspiring';
                                 followBtn.classList.remove('following');
                                 
                                 // Update follower count
@@ -176,16 +176,16 @@
                                 if (followerCountElement) {
                                     const currentCount = parseInt(followerCountElement.textContent);
                                     if (!isNaN(currentCount)) {
-                                        followerCountElement.textContent = `${Math.max(0, currentCount - 1)} followers`;
+                                        followerCountElement.textContent = `${Math.max(0, currentCount - 1)} admirers`;
                                     }
                                 }
                             } else {
-                                console.error('Failed to unfollow:', data.message);
-                                alert('Failed to unfollow user: ' + data.message);
+                                console.error('Failed to remove from inspiring:', data.message);
+                                alert('Action failed: ' + data.message);
                             }
                         })
                         .catch(error => {
-                            console.error('Error unfollowing user:', error);
+                            console.error('Error updating relationship:', error);
                             alert('An error occurred. Please try again.');
                         })
                         .finally(() => {
@@ -203,7 +203,7 @@
                         .then(data => {
                             if (data.success) {
                                 // Update UI
-                                followBtn.textContent = 'Unfollow';
+                                followBtn.textContent = 'Stop Inspiring';
                                 followBtn.classList.add('following');
                                 
                                 // Update follower count
@@ -212,16 +212,16 @@
                                     const currentText = followerCountElement.textContent;
                                     const currentCount = parseInt(currentText);
                                     if (!isNaN(currentCount)) {
-                                        followerCountElement.textContent = `${currentCount + 1} followers`;
+                                        followerCountElement.textContent = `${currentCount + 1} admirers`;
                                     }
                                 }
                             } else {
-                                console.error('Failed to follow:', data.message);
-                                alert('Failed to follow user: ' + data.message);
+                                console.error('Failed to find inspiring:', data.message);
+                                alert('Action failed: ' + data.message);
                             }
                         })
                         .catch(error => {
-                            console.error('Error following user:', error);
+                            console.error('Error updating relationship:', error);
                             alert('An error occurred. Please try again.');
                         })
                         .finally(() => {
@@ -255,7 +255,7 @@
                     const postId = this.getAttribute('data-post-id');
                     const imgSrc = this.querySelector('img').src;
                     const likes = parseInt(this.querySelector('.fa-heart').nextSibling.textContent.trim());
-                    const comments = parseInt(this.querySelector('.fa-comment').nextSibling.textContent.trim());
+                    const comments = parseInt(this.querySelector('.fa-comment-dots').nextSibling.textContent.trim());
                     const description = this.getAttribute('data-description') || '';
                     
                     // Get post date if available
@@ -290,7 +290,7 @@
                     
                     // Populate modal with post data
                     modalPostImage.src = postData.imageUrl;
-                    modalUserAvatar.src = userData.photoURL || 'https://via.placeholder.com/40';
+                    modalUserAvatar.src = userData.photoURL || '/static/images/default-avatar.png';
                     modalUsername.textContent = userData.username;
                     modalDescription.textContent = postData.description;
                     modalLikes.textContent = postData.likes;
@@ -372,7 +372,7 @@
                         }
                     })
                     .catch((error) => {
-                        console.error("Error checking if post is liked:", error);
+                        console.error("Error checking if moment is appreciated:", error);
                     });
 
                 // Add click event listener for like/unlike
@@ -421,7 +421,7 @@
                             }
                         })
                         .catch((error) => {
-                            console.error("Error unliking post:", error);
+                            console.error("Error removing appreciation:", error);
                         });
                 } else {
                     // Like the post
@@ -461,7 +461,7 @@
                             setTimeout(() => likeAnim.remove(), 700);
                         })
                         .catch((error) => {
-                            console.error("Error liking post:", error);
+                            console.error("Error adding appreciation:", error);
                         });
                 }
             }
@@ -479,7 +479,7 @@
                     .get()
                     .then((querySnapshot) => {
                         if (querySnapshot.empty) {
-                            modalComments.innerHTML = '<p class="no-comments">No comments yet.</p>';
+                            modalComments.innerHTML = '<p class="no-comments">No thoughts shared yet.</p>';
                             return;
                         }
                         
@@ -490,7 +490,7 @@
                             
                             commentElement.innerHTML = `
                                 <div class="comment-user-avatar">
-                                    <img src="${comment.photoURL || 'https://via.placeholder.com/30'}" alt="${comment.username}">
+                                    <img src="${comment.photoURL || '/static/images/default-avatar.png'}" alt="${comment.username}">
                                 </div>
                                 <div class="comment-content">
                                     <div class="comment-username">${comment.username}</div>
@@ -506,8 +506,8 @@
                         modalCommentsCount.textContent = querySnapshot.size;
                     })
                     .catch((error) => {
-                        console.error("Error loading comments: ", error);
-                        modalComments.innerHTML = '<p class="error">Error loading comments.</p>';
+                        console.error("Error loading thoughts: ", error);
+                        modalComments.innerHTML = '<p class="error">Error loading thoughts.</p>';
                     });
             }
             
@@ -540,7 +540,7 @@
                         // Update comment count in the post grid item
                         const postElement = document.querySelector(`.post-item[data-post-id="${postId}"]`);
                         if (postElement) {
-                            const commentCountElement = postElement.querySelector('.fa-comment').nextSibling;
+                            const commentCountElement = postElement.querySelector('.fa-comment-dots').nextSibling;
                             const currentCount = parseInt(commentCountElement.textContent.trim());
                             commentCountElement.textContent = ` ${currentCount + 1}`;
                         }
@@ -551,8 +551,8 @@
                         });
                     })
                     .catch((error) => {
-                        console.error("Error adding comment: ", error);
-                        alert("Failed to add comment: " + error.message);
+                        console.error("Error adding thought: ", error);
+                        alert("Failed to add thought: " + error.message);
                     })
                     .finally(() => {
                         // Re-enable button
@@ -596,7 +596,7 @@
         <div class="modal-content">
             <div class="post-detail-container">
                 <div class="post-image-container">
-                    <img id="modal-post-image" src="" alt="Post">
+                    <img id="modal-post-image" src="" alt="Moment">
                 </div>
                 <div class="post-info-container">
                     <div class="post-header">
@@ -615,20 +615,21 @@
                     </div>
                     <div class="post-stats-container">
                         <div class="post-likes">
-                            <i id="modal-like-icon" class="far fa-heart"></i> <span id="modal-likes">0</span> likes
+                            <i id="modal-like-icon" class="far fa-heart"></i> <span id="modal-likes">0</span> appreciations
                         </div>
                         <div class="post-comments-count">
-                            <span id="modal-comments-count">0</span> comments
+                            <span id="modal-comments-count">0</span> thoughts
                         </div>
                         <div id="modal-post-date" class="post-date"></div>
                     </div>
                     <div class="post-comments-container">
-                        <h4>Comments</h4>
+                        <h4>Thoughts</h4>
                         <div id="modal-comments" class="comments-list"></div>
                     </div>
                     <div class="add-comment-container">
-                        <textarea id="comment-input" placeholder="Add a comment..."></textarea>
-                        <button id="post-comment-btn" class="comment-btn">Post</button>
+                        <textarea id="comment-input" placeholder="Share your thoughts..." maxlength="200"></textarea>
+                        <button id="post-comment-btn" class="comment-btn">Send</button>
+                        <span id="comment-counter" class="character-count">0/200</span>
                     </div>
                 </div>
             </div>

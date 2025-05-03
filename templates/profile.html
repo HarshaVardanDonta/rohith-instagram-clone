@@ -3,39 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Social</title>
+    <title>{{ user_data.username }} | PhotoShare</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/universal.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <!-- Custom Firebase initialization -->
     <script src="{{ url_for('static', path='/js/firebase-init.js') }}"></script>
 </head>
 <body class="is-authenticated">
     <header>
         <div class="header-container">
             <div class="logo">
-                <h1>Social</h1>
+                <h1>PhotoShare</h1>
             </div>
             <div class="search">
-                <input type="text" placeholder="Search">
+                <input type="text" placeholder="Discover users and content">
             </div>
             <nav>
                 <ul>
-                    <li><a href="/home"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="/messages"><i class="fas fa-inbox"></i> Messages</a></li>
-                    <li><a href="/create"><i class="fas fa-plus-square"></i> Create</a></li>
+                    <li><a href="/home"><i class="fas fa-images"></i> Gallery</a></li>
+                    <li><a href="/messages"><i class="fas fa-comment-dots"></i> Connect</a></li>
+                    <li><a href="/create"><i class="fas fa-camera-retro"></i> Capture</a></li>
                     <li class="user-menu">
                         <div class="user-avatar">
                             {% if user_data.photoURL %}
                             <img src="{{ user_data.photoURL }}" alt="{{ user_data.displayName }}">
                             {% else %}
-                            <i class="fas fa-user"></i>
+                            <i class="fas fa-user-astronaut"></i>
                             {% endif %}
                         </div>
                         <div class="user-dropdown">
@@ -46,15 +44,15 @@
                             <ul class="user-dropdown-links">
                                 <li><a href="/profile" class="active">
                                     <div class="menu-item-content">
-                                        <i class="fas fa-user"></i>
-                                        <span class="menu-item-text">Profile</span>
+                                        <i class="fas fa-user-circle"></i>
+                                        <span class="menu-item-text">My Space</span>
                                     </div>
                                     <i class="fas fa-chevron-right right-icon"></i>
                                 </a></li>
                                 <li><a href="/logout" class="logout-link">
                                     <div class="menu-item-content">
-                                        <i class="fas fa-sign-out-alt"></i>
-                                        <span class="menu-item-text">Logout</span>
+                                        <i class="fas fa-door-open"></i>
+                                        <span class="menu-item-text">Exit App</span>
                                     </div>
                                 </a></li>
                             </ul>
@@ -79,27 +77,27 @@
                     <img src="{{ user_data.photoURL }}" alt="{{ user_data.displayName }}">
                     {% else %}
                     <div class="profile-placeholder">
-                        <i class="fas fa-user"></i>
+                        <i class="fas fa-user-astronaut"></i>
                     </div>
                     {% endif %}
                 </div>
                 <div class="profile-info">
                     <h1>{{ user_data.username }}</h1>
                     <div class="profile-stats">
-                        <div class="stat">{{ user_data.post_count }} posts</div>
-                        <div class="stat"><a href="/followers/{{ user_data.uid }}" class="stat-link">0 followers</a></div>
-                        <div class="stat"><a href="/following/{{ user_data.uid }}" class="stat-link">0 following</a></div>
+                        <div class="stat">{{ user_data.post_count }} moments</div>
+                        <div class="stat"><a href="/followers/{{ user_data.uid }}" class="stat-link">0 admirers</a></div>
+                        <div class="stat"><a href="/following/{{ user_data.uid }}" class="stat-link">0 inspiring</a></div>
                     </div>
                     <div class="profile-fullname">{{ user_data.displayName }}</div>
                     <div class="profile-actions">
-                        <a href="/edit-profile" class="edit-profile-btn">Edit Profile</a>
+                        <a href="/edit-profile" class="edit-profile-btn">Personalize Profile</a>
                     </div>
                 </div>
             </div>
 
             <div class="profile-content">
                 <div class="profile-tabs">
-                    <a href="#posts" class="active"><i class="fas fa-th"></i> Posts</a>
+                    <a href="#posts" class="active"><i class="fas fa-grid-2"></i> My Collection</a>
                 </div>
                 
                 <div class="profile-posts">
@@ -107,14 +105,14 @@
                         <div class="posts-grid">
                             {% for post in posts %}
                                 <div class="post-item" data-post-id="{{ post.postId }}" data-description="{{ post.description }}">
-                                    <img src="{{ post.imageUrl }}" alt="Post by {{ post.username }}">
+                                    <img src="{{ post.imageUrl }}" alt="Moment by {{ post.username }}">
                                     <div class="post-overlay">
                                         <div class="post-stats">
                                             <div>
                                                 <i class="fas fa-heart"></i> {{ post.likes }}
                                             </div>
                                             <div>
-                                                <i class="fas fa-comment"></i> {{ post.comments }}
+                                                <i class="fas fa-comment-dots"></i> {{ post.comments }}
                                             </div>
                                         </div>
                                         {% if post.createdAt %}
@@ -127,7 +125,7 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <p class="no-posts">No posts yet.</p>
+                        <p class="no-posts">Your collection is empty. Start sharing beautiful moments!</p>
                     {% endif %}
                 </div>
             </div>
@@ -135,13 +133,10 @@
     </main>
 
     <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
-    <!-- Add search.js to enable profile search functionality -->
     <script src="{{ url_for('static', path='/js/search.js') }}"></script>
     
-    <!-- Post click handler script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Modal elements
             const postModal = document.getElementById('post-modal');
             const closeModal = document.querySelector('.close-modal');
             const modalPostImage = document.getElementById('modal-post-image');
@@ -157,24 +152,20 @@
             const postCommentBtn = document.getElementById('post-comment-btn');
             let currentPostId = null;
             
-            // Add click event listeners to each post item in the grid
             document.querySelectorAll('.post-item').forEach(post => {
                 post.addEventListener('click', function() {
-                    // Get post data
                     const postId = this.getAttribute('data-post-id');
                     const imgSrc = this.querySelector('img').src;
                     const likes = parseInt(this.querySelector('.fa-heart').nextSibling.textContent.trim());
-                    const comments = parseInt(this.querySelector('.fa-comment').nextSibling.textContent.trim());
+                    const comments = parseInt(this.querySelector('.fa-comment-dots').nextSibling.textContent.trim());
                     const description = this.getAttribute('data-description') || '';
                     
-                    // Get post date if available
                     let postCreatedAt = null;
                     const dateElement = this.querySelector('.post-date');
                     if (dateElement) {
                         postCreatedAt = dateElement.textContent.trim();
                     }
                     
-                    // Create a post data object
                     const postData = {
                         postId: postId,
                         imageUrl: imgSrc,
@@ -186,7 +177,6 @@
                         createdAt: postCreatedAt
                     };
                     
-                    // Get current user data
                     const userData = {
                         uid: '{{ user_data.uid }}',
                         username: '{{ user_data.username }}',
@@ -194,12 +184,10 @@
                         photoURL: '{{ user_data.photoURL }}'
                     };
                     
-                    // Set current post ID
                     currentPostId = postId;
                     
-                    // Populate modal with post data
                     modalPostImage.src = postData.imageUrl;
-                    modalUserAvatar.src = userData.photoURL || 'https://via.placeholder.com/40';
+                    modalUserAvatar.src = userData.photoURL || '/static/images/default-avatar.png';
                     modalUsername.textContent = userData.username;
                     modalDescription.textContent = postData.description;
                     modalLikes.textContent = postData.likes;
@@ -210,7 +198,6 @@
                         modalPostTimestamp.textContent = postData.createdAt;
                     }
                     
-                    // Fix comment section width
                     const infoContainer = document.querySelector('.post-info-container');
                     const commentsContainer = document.querySelector('.post-comments-container');
                     const commentInput = document.getElementById('comment-input');
@@ -230,7 +217,6 @@
                     if (commentInput) {
                         commentInput.style.width = 'calc(100% - 70px)';
                         
-                        // Add character counter functionality
                         commentInput.addEventListener('input', function() {
                             const currentLength = this.value.length;
                             commentCounter.textContent = `${currentLength}/200`;
@@ -251,56 +237,43 @@
                         commentCounter.style.color = '#8E8E8E';
                     }
                     
-                    // Load comments for this post
                     loadPostComments(postId);
-                    
-                    // Check if the post is liked by current user
                     checkPostLiked(postId);
                     
-                    // Show modal
                     postModal.style.display = 'flex';
                     
-                    // Setup comment posting functionality
                     postCommentBtn.onclick = function() {
                         postComment(postId, userData);
                     };
 
-                    // Enable post comment button based on input
                     commentInput.oninput = function() {
                         postCommentBtn.disabled = !this.value.trim();
                     };
 
-                    // Make sure comment input is cleared
                     commentInput.value = '';
                     postCommentBtn.disabled = true;
                 });
             });
             
-            // Close modal when clicking the close button or outside the modal
             closeModal.addEventListener('click', function() {
                 postModal.style.display = 'none';
-                // Clear the comment input when closing
                 commentInput.value = '';
             });
             
             window.addEventListener('click', function(event) {
                 if (event.target === postModal) {
                     postModal.style.display = 'none';
-                    // Clear the comment input when closing
                     commentInput.value = '';
                 }
             });
             
-            // Add keyboard support to close modal with Escape key
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape' && postModal.style.display === 'flex') {
                     postModal.style.display = 'none';
-                    // Clear the comment input when closing
                     commentInput.value = '';
                 }
             });
 
-            // Function to check if post has been liked by current user
             function checkPostLiked(postId) {
                 const userId = '{{ user_data.uid }}';
                 const likeIcon = document.getElementById('modal-like-icon');
@@ -312,26 +285,22 @@
                     .get()
                     .then((doc) => {
                         if (doc.exists) {
-                            // User has liked this post
                             likeIcon.className = 'fas fa-heart';
                             likeIcon.style.color = '#e74c3c';
                         } else {
-                            // User has not liked this post
                             likeIcon.className = 'far fa-heart';
                             likeIcon.style.color = '';
                         }
                     })
                     .catch((error) => {
-                        console.error("Error checking if post is liked:", error);
+                        console.error("Error checking if post is appreciated:", error);
                     });
 
-                // Add click event listener for like/unlike
                 likeIcon.onclick = function() {
                     toggleLike(postId);
                 };
             }
 
-            // Function to toggle like/unlike
             function toggleLike(postId) {
                 const likeIcon = document.getElementById('modal-like-icon');
                 const likesCountElement = document.getElementById('modal-likes');
@@ -339,19 +308,16 @@
                 const userId = '{{ user_data.uid }}';
                 const username = '{{ user_data.username }}';
                 
-                // Get post item in grid to update
                 const postItem = document.querySelector(`.post-item[data-post-id="${postId}"]`);
                 const postLikesElement = postItem ? postItem.querySelector('.fa-heart').nextSibling : null;
                 
                 if (likeIcon.classList.contains('fas')) {
-                    // Unlike the post
                     firebase.firestore().collection('Posts')
                         .doc(postId)
                         .collection('Likes')
                         .doc(userId)
                         .delete()
                         .then(() => {
-                            // Update the post document
                             return firebase.firestore()
                                 .collection('Posts')
                                 .doc(postId)
@@ -360,21 +326,18 @@
                                 });
                         })
                         .then(() => {
-                            // Update UI
                             likeIcon.className = 'far fa-heart';
                             likeIcon.style.color = '';
                             likesCountElement.textContent = Math.max(0, currentLikes - 1);
                             
-                            // Update likes in post grid item
                             if (postLikesElement) {
                                 postLikesElement.textContent = ` ${Math.max(0, currentLikes - 1)}`;
                             }
                         })
                         .catch((error) => {
-                            console.error("Error unliking post:", error);
+                            console.error("Error removing appreciation:", error);
                         });
                 } else {
-                    // Like the post
                     firebase.firestore().collection('Posts')
                         .doc(postId)
                         .collection('Likes')
@@ -385,7 +348,6 @@
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         })
                         .then(() => {
-                            // Update the post document
                             return firebase.firestore()
                                 .collection('Posts')
                                 .doc(postId)
@@ -394,42 +356,36 @@
                                 });
                         })
                         .then(() => {
-                            // Update UI
                             likeIcon.className = 'fas fa-heart';
                             likeIcon.style.color = '#e74c3c';
                             likesCountElement.textContent = currentLikes + 1;
                             
-                            // Update likes in post grid item
                             if (postLikesElement) {
                                 postLikesElement.textContent = ` ${currentLikes + 1}`;
                             }
                             
-                            // Add like animation
                             const likeAnim = document.createElement('div');
                             likeAnim.className = 'like-animation';
                             likeIcon.parentNode.appendChild(likeAnim);
                             setTimeout(() => likeAnim.remove(), 700);
                         })
                         .catch((error) => {
-                            console.error("Error liking post:", error);
+                            console.error("Error adding appreciation:", error);
                         });
                 }
             }
             
-            // Function to load comments for a post
             function loadPostComments(postId) {
-                // Clear existing comments
                 modalComments.innerHTML = '';
                 
-                // Get comments from Firestore
                 firebase.firestore().collection('Posts')
                     .doc(postId)
                     .collection('Comments')
-                    .orderBy('createdAt', 'desc') // Changed from 'desc' to ensure newest comments first
+                    .orderBy('createdAt', 'desc')
                     .get()
                     .then((querySnapshot) => {
                         if (querySnapshot.empty) {
-                            modalComments.innerHTML = '<p class="no-comments">No comments yet.</p>';
+                            modalComments.innerHTML = '<p class="no-comments">No thoughts shared yet.</p>';
                             return;
                         }
                         
@@ -440,7 +396,7 @@
                             
                             commentElement.innerHTML = `
                                 <div class="comment-user-avatar">
-                                    <img src="${comment.photoURL || 'https://via.placeholder.com/30'}" alt="${comment.username}">
+                                    <img src="${comment.photoURL || '/static/images/default-avatar.png'}" alt="${comment.username}">
                                 </div>
                                 <div class="comment-content">
                                     <div class="comment-username">${comment.username}</div>
@@ -452,24 +408,20 @@
                             modalComments.appendChild(commentElement);
                         });
                         
-                        // Update comment count in the modal
                         modalCommentsCount.textContent = querySnapshot.size;
                     })
                     .catch((error) => {
-                        console.error("Error loading comments: ", error);
-                        modalComments.innerHTML = '<p class="error">Error loading comments.</p>';
+                        console.error("Error loading thoughts: ", error);
+                        modalComments.innerHTML = '<p class="error">Error loading thoughts.</p>';
                     });
             }
             
-            // Function to post a new comment
             function postComment(postId, userData) {
                 const commentText = commentInput.value.trim();
                 if (!commentText) return;
                 
-                // Disable button while posting
                 postCommentBtn.disabled = true;
                 
-                // Create new comment in Firestore under the post's Comments subcollection
                 firebase.firestore().collection('Posts')
                     .doc(postId)
                     .collection('Comments')
@@ -481,36 +433,30 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     })
                     .then(() => {
-                        // Clear input
                         commentInput.value = '';
                         
-                        // Reload comments
                         loadPostComments(postId);
                         
-                        // Update comment count in the post grid item
                         const postElement = document.querySelector(`.post-item[data-post-id="${postId}"]`);
                         if (postElement) {
-                            const commentCountElement = postElement.querySelector('.fa-comment').nextSibling;
+                            const commentCountElement = postElement.querySelector('.fa-comment-dots').nextSibling;
                             const currentCount = parseInt(commentCountElement.textContent.trim());
                             commentCountElement.textContent = ` ${currentCount + 1}`;
                         }
                         
-                        // Update firestore post document with new comment count
                         firebase.firestore().collection('Posts').doc(postId).update({
                             comments: firebase.firestore.FieldValue.increment(1)
                         });
                     })
                     .catch((error) => {
-                        console.error("Error adding comment: ", error);
-                        alert("Failed to add comment: " + error.message);
+                        console.error("Error adding thought: ", error);
+                        alert("Failed to add thought: " + error.message);
                     })
                     .finally(() => {
-                        // Re-enable button
                         postCommentBtn.disabled = false;
                     });
             }
             
-            // Helper function to format date
             function formatDate(timestamp) {
                 if (!timestamp) return '';
                 
@@ -540,13 +486,12 @@
         });
     </script>
     
-    <!-- Post Modal -->
     <div id="post-modal" class="post-modal">
         <div class="close-modal">&times;</div>
         <div class="modal-content">
             <div class="post-detail-container">
                 <div class="post-image-container">
-                    <img id="modal-post-image" src="" alt="Post">
+                    <img id="modal-post-image" src="" alt="Moment">
                 </div>
                 <div class="post-info-container">
                     <div class="post-header">
@@ -565,20 +510,20 @@
                     </div>
                     <div class="post-stats-container">
                         <div class="post-likes">
-                            <i id="modal-like-icon" class="far fa-heart"></i> <span id="modal-likes">0</span> likes
+                            <i id="modal-like-icon" class="far fa-heart"></i> <span id="modal-likes">0</span> appreciations
                         </div>
                         <div class="post-comments-count">
-                            <span id="modal-comments-count">0</span> comments
+                            <span id="modal-comments-count">0</span> thoughts
                         </div>
                         <div id="modal-post-date" class="post-date"></div>
                     </div>
                     <div class="post-comments-container">
-                        <h4>Comments</h4>
+                        <h4>Thoughts</h4>
                         <div id="modal-comments" class="comments-list"></div>
                     </div>
                     <div class="add-comment-container">
-                        <textarea id="comment-input" placeholder="Add a comment..." maxlength="200"></textarea>
-                        <button id="post-comment-btn" class="comment-btn">Post</button>
+                        <textarea id="comment-input" placeholder="Share your thoughts..." maxlength="200"></textarea>
+                        <button id="post-comment-btn" class="comment-btn">Send</button>
                         <span id="comment-counter" class="character-count">0/200</span>
                     </div>
                 </div>

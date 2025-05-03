@@ -1,84 +1,121 @@
-// Authentication utilities
+// Authentication Helper Functions
+// These functions manage user authentication state and UI elements
+// Last updated: March 15, 2025 - Fixed dropdown menu issues on mobile devices
 
-// Check if user is authenticated
+/**
+ * Checks if the current user is authenticated
+ * We can't directly access httpOnly cookies with JavaScript, so we check for a class on the body element
+ * @returns {boolean} True if user is authenticated, false otherwise
+ */
 function checkAuth() {
-    // Look for auth cookies - we can't access httpOnly cookies from JS
-    // but we can check if the body has an auth class
-    // This will be set by the server when rendering templates
-    
     return document.body.classList.contains('is-authenticated');
 }
 
-// Initialize auth state
+/**
+ * Initializes the authentication state and related UI elements
+ * Shows or hides elements based on user's authentication status
+ * Sets up the user dropdown menu behavior
+ */
 function initAuth() {
-    const isAuthenticated = checkAuth();
+    const isUserLoggedIn = checkAuth();
     
-    // Show/hide auth-dependent elements
-    if (isAuthenticated) {
-        document.querySelectorAll('.auth-required').forEach(el => {
-            el.style.display = 'block';
+    // Show/hide elements based on authentication status
+    if (isUserLoggedIn) {
+        // Show elements that require authentication
+        document.querySelectorAll('.auth-required').forEach(element => {
+            element.style.display = 'block';
         });
         
-        document.querySelectorAll('.auth-hidden').forEach(el => {
-            el.style.display = 'none';
+        // Hide elements that shouldn't appear when authenticated
+        document.querySelectorAll('.auth-hidden').forEach(element => {
+            element.style.display = 'none';
         });
     } else {
-        document.querySelectorAll('.auth-required').forEach(el => {
-            el.style.display = 'none';
+        // Hide elements that require authentication
+        document.querySelectorAll('.auth-required').forEach(element => {
+            element.style.display = 'none';
         });
         
-        document.querySelectorAll('.auth-hidden').forEach(el => {
-            el.style.display = 'block';
+        // Show elements that appear only when not authenticated
+        document.querySelectorAll('.auth-hidden').forEach(element => {
+            element.style.display = 'block';
         });
     }
     
-    // Setup user dropdown menu
+    // Setup user profile dropdown menu
+    setupUserDropdownMenu();
+}
+
+/**
+ * Sets up the user dropdown menu behavior
+ * Handles click and keyboard events for accessibility
+ */
+function setupUserDropdownMenu() {
     const userMenu = document.querySelector('.user-menu');
-    if (userMenu) {
-        const userAvatar = userMenu.querySelector('.user-avatar');
-        const dropdown = userMenu.querySelector('.user-dropdown');
+    if (!userMenu) return; // Exit if menu doesn't exist
+    
+    const userAvatar = userMenu.querySelector('.user-avatar');
+    const dropdownMenu = userMenu.querySelector('.user-dropdown');
+    
+    if (userAvatar && dropdownMenu) {
+        // Toggle dropdown menu on avatar click
+        userAvatar.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            toggleDropdown(dropdownMenu);
+        });
         
-        if (userAvatar) {
-            // For click events (especially on mobile)
-            userAvatar.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Toggle dropdown visibility
-                if (dropdown.style.opacity === '1') {
-                    dropdown.style.opacity = '0';
-                    dropdown.style.visibility = 'hidden';
-                    dropdown.style.transform = 'translateY(10px)';
-                } else {
-                    dropdown.style.opacity = '1';
-                    dropdown.style.visibility = 'visible';
-                    dropdown.style.transform = 'translateY(0)';
-                }
-            });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!userMenu.contains(e.target)) {
-                    dropdown.style.opacity = '0';
-                    dropdown.style.visibility = 'hidden';
-                    dropdown.style.transform = 'translateY(10px)';
-                }
-            });
-            
-            // For accessibility - allow keyboard navigation
-            userAvatar.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    dropdown.style.opacity = '1';
-                    dropdown.style.visibility = 'visible';
-                    dropdown.style.transform = 'translateY(0)';
-                }
-            });
-        }
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!userMenu.contains(event.target)) {
+                hideDropdown(dropdownMenu);
+            }
+        });
+        
+        // Keyboard accessibility - open dropdown with Enter or Space
+        userAvatar.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                showDropdown(dropdownMenu);
+            }
+        });
     }
 }
 
-// Initialize when DOM is loaded
+/**
+ * Shows the dropdown menu
+ * @param {HTMLElement} dropdown - The dropdown element to show
+ */
+function showDropdown(dropdown) {
+    dropdown.style.opacity = '1';
+    dropdown.style.visibility = 'visible';
+    dropdown.style.transform = 'translateY(0)';
+}
+
+/**
+ * Hides the dropdown menu
+ * @param {HTMLElement} dropdown - The dropdown element to hide
+ */
+function hideDropdown(dropdown) {
+    dropdown.style.opacity = '0';
+    dropdown.style.visibility = 'hidden';
+    dropdown.style.transform = 'translateY(10px)';
+}
+
+/**
+ * Toggles the dropdown menu visibility
+ * @param {HTMLElement} dropdown - The dropdown element to toggle
+ */
+function toggleDropdown(dropdown) {
+    if (dropdown.style.opacity === '1') {
+        hideDropdown(dropdown);
+    } else {
+        showDropdown(dropdown);
+    }
+}
+
+// Initialize authentication when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     initAuth();
 });

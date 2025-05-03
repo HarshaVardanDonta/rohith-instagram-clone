@@ -1,51 +1,38 @@
-/**
- * Search functionality for finding users by display name
- */
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Get the search input element
-    const searchInput = document.querySelector('.search input');
+    const searchBox = document.querySelector('.search input');
     
-    // Create search results dropdown container
-    const searchResultsContainer = document.createElement('div');
-    searchResultsContainer.className = 'search-results-container';
-    document.querySelector('.search').appendChild(searchResultsContainer);
+    const resultsBox = document.createElement('div');
+    resultsBox.className = 'search-results-container';
+    document.querySelector('.search').appendChild(resultsBox);
     
-    // Add event listeners for search input
-    if (searchInput) {
-        // Handle input event for searching
-        searchInput.addEventListener('input', debounce(function() {
-            const query = searchInput.value.trim();
+    if (searchBox) {
+        searchBox.addEventListener('input', debounce(function() {
+            const searchText = searchBox.value.trim();
             
-            // Hide dropdown if query is empty
-            if (!query) {
-                searchResultsContainer.innerHTML = '';
-                searchResultsContainer.classList.remove('show');
+            if (!searchText) {
+                resultsBox.innerHTML = '';
+                resultsBox.classList.remove('show');
                 return;
             }
             
-            // Perform search
-            performSearch(query, searchResultsContainer);
-        }, 300));  // 300ms debounce delay
+            findUsers(searchText, resultsBox);
+        }, 300));
         
-        // Handle click outside search dropdown to close it
         document.addEventListener('click', function(event) {
             if (!event.target.closest('.search')) {
-                searchResultsContainer.classList.remove('show');
+                resultsBox.classList.remove('show');
             }
         });
         
-        // Handle focus on search input
-        searchInput.addEventListener('focus', function() {
-            const query = searchInput.value.trim();
-            if (query) {
-                searchResultsContainer.classList.add('show');
+        searchBox.addEventListener('focus', function() {
+            const searchText = searchBox.value.trim();
+            if (searchText) {
+                resultsBox.classList.add('show');
             }
         });
     }
 });
 
-// Debounce function to limit API calls
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -55,39 +42,31 @@ function debounce(func, wait) {
     };
 }
 
-// Perform search API call and render results
-async function performSearch(query, resultsContainer) {
+async function findUsers(query, resultsBox) {
     try {
-        // Call the search endpoint
         const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
         const data = await response.json();
         
-        // Render search results
-        renderSearchResults(data.users, resultsContainer);
+        showResults(data.users, resultsBox);
     } catch (error) {
-        console.error('Search error:', error);
-        resultsContainer.innerHTML = '<div class="search-error">Error occurred while searching</div>';
-        resultsContainer.classList.add('show');
+        console.error('Ugh, search failed:', error);
+        resultsBox.innerHTML = '<div class="search-error">Something went wrong with the search</div>';
+        resultsBox.classList.add('show');
     }
 }
 
-// Render search results in the dropdown
-function renderSearchResults(users, container) {
-    // Clear previous results
+function showResults(users, container) {
     container.innerHTML = '';
     
-    // If no users found
     if (users.length === 0) {
         container.innerHTML = '<div class="no-results">No users found</div>';
         container.classList.add('show');
         return;
     }
     
-    // Create results list
-    const resultsList = document.createElement('ul');
-    resultsList.className = 'search-results-list';
+    const userList = document.createElement('ul');
+    userList.className = 'search-results-list';
     
-    // Add users to results list
     users.forEach(user => {
         const userItem = document.createElement('li');
         userItem.className = 'search-result-item';
@@ -106,12 +85,9 @@ function renderSearchResults(users, container) {
             </a>
         `;
         
-        resultsList.appendChild(userItem);
+        userList.appendChild(userItem);
     });
     
-    // Add list to container
-    container.appendChild(resultsList);
-    
-    // Show the dropdown
+    container.appendChild(userList);
     container.classList.add('show');
 }
